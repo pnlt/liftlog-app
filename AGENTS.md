@@ -1,41 +1,57 @@
-This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+# AGENTS.md
 
-## Expo has changed — do not trust your training data
+Instructions for humans and coding agents working in this repo. Setup and commands: [README.md](README.md).
 
-Expo ships breaking changes every SDK release. APIs you remember are likely renamed, moved, or removed. Before writing any code that touches an Expo, EAS, or React Native API:
+## Expo changes every SDK; do not trust training data
 
-1. Read the major version of the `expo` package in `package.json`.
-2. Fetch the matching versioned docs: `https://docs.expo.dev/versions/v<major>.0.0/`
-3. For anything else, fetch https://docs.expo.dev/llms.txt — an index of all Expo docs with corrections to common LLM misconceptions. Follow its links to the specific page you need; never answer from memory.
+Before touching an Expo, EAS or React Native API, read the `expo` major in `apps/mobile/package.json` and use the matching docs at `https://docs.expo.dev/versions/v<major>.0.0/`. Index with corrections to common LLM mistakes: https://docs.expo.dev/llms.txt.
 
-## Commands
+## Workspace
 
-Use `bunx` instead of `npx` if the project uses bun (`bun.lock` present).
+pnpm monorepo, `nodeLinker: hoisted` (React Native needs a flat `node_modules`). Use `pnpm`, never npm, yarn or bun. Packages are consumed as TypeScript source; there is no build step.
 
-```bash
-npx expo install <package>  # ALWAYS use instead of npm/yarn/pnpm/bun add — resolves SDK-compatible versions
-npx expo start              # start the dev server
-npx expo lint               # lint
-npx tsc --noEmit            # typecheck
-npx expo-doctor             # diagnose dependency and config issues
-npx expo install --fix      # fix incompatible package versions
-```
+| Path                 | Owns                                                       | May import                       |
+| -------------------- | ---------------------------------------------------------- | -------------------------------- |
+| `packages/domain`    | training rules: plans, progression, e1RM, stats, units     | nothing (pure TS, no RN, no I/O) |
+| `packages/contracts` | zod schemas for data crossing a boundary (DB, CMS, server) | `zod`, `@liftlog/domain` types   |
+| `apps/mobile`        | screens, UI, local SQLite, auth, device APIs               | both packages                    |
 
-Run lint and typecheck before declaring any task done.
+Logic that does not need React or a device goes in `packages/domain` with a vitest test next to it. Anything a backend must agree on goes in `packages/contracts`.
 
-## Navigation & Routing
+## Mobile app (`apps/mobile/src`)
 
-- Use **Expo Router** for all navigation. Routes live in `src/app/` — every file there is a screen, `_layout.tsx` files define navigators. Keep non-route code (components, hooks, utils) outside `src/app/`.
-- Import `Link`, `router`, and `useLocalSearchParams` from `expo-router`.
-- Docs: https://docs.expo.dev/router/introduction.md
+- `app/`: Expo Router routes only. Each file is a screen that renders a component from `features/`. `(app)/` is behind auth.
+- `features/<name>/`: screens, components, hooks and Zustand stores of one feature.
+- `ui/`: shared primitives (`Button`, `Card`, `Text`, `Screen`, `PressableScale`), `colors.js` tokens, `motion.ts` springs and durations. Reuse these; no raw hex colours or ad-hoc animation timings in features.
+- `data/`: Drizzle schema, migrations and queries. Screens read through `data/*` functions, never raw SQL.
+- `services/content/`: exercise catalog sources (bundled JSON, optional Sanity CMS), validated with `ExerciseSchema` before upsert.
+- `services/events.ts`: in-app domain event bus.
+- `lib/`: env parsing, formatting, storage helpers.
 
-## Building with EAS
+Imports use `@/` for `src/`.
 
-Use EAS to build, sign, and submit the app in the cloud (`eas build`, `eas submit`) and to ship over-the-air updates (`eas update`) — no local Xcode or Android Studio required. Run EAS CLI as `bunx eas-cli <command>` in Bun projects, or `npx eas-cli@latest <command>` otherwise; substitute that for bare `eas` in docs examples.
-Docs: https://docs.expo.dev/eas/index.md
+## Seams for backend, gamification and AI
+
+These are the integration points. Extend them instead of importing another feature's internals.
+
+- **Domain events.** `domainEvents.subscribe` in `services/events.ts` receives events such as `workout.completed` (schema in `packages/contracts/src/events.ts`). Gamification (XP, streak rewards, badges) and backend sync subscribe here. New events: add the zod schema to `contracts`, extend the `DomainEvent` union, emit from the feature that owns the fact.
+- **Backend API.** Not built yet. A server goes in `apps/<name>` as a new workspace and validates requests with `@liftlog/contracts`. The app's client goes in `apps/mobile/src/services/api/` and authenticates with the Clerk session token (`useAuth().getToken()`), never with a shared key.
+- **AI coach.** `features/coach/coach.ts` defines `CoachClient`. Implement it against backend endpoints. Model API keys live on the server only; anything in the app bundle is public.
+- **Content.** Implement `ExerciseSource` (`services/content/source.ts`) for a new catalog source.
+
+The app is offline-first: SQLite is the source of truth on the device. Sync must never block logging a set.
+
+## Database
+
+Schema: `apps/mobile/src/data/db/schema.ts`. After changing it run `pnpm --filter @liftlog/mobile db:generate` and commit the generated SQL, snapshot and `migrations.js`. Never edit an existing migration; add a new one.
 
 ## Rules
 
-- If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
-- Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
-- Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+- TypeScript strict, no `any`. Parse untrusted data with zod at the boundary.
+- Add packages to the app with `pnpm exec expo install <pkg>` from `apps/mobile`.
+- `android/` and `ios/` are generated; configure native behaviour in `app.json` or config plugins. A new native module needs a rebuilt dev client.
+- Respect reduced motion (`useReducedMotion`) and give interactive elements accessibility labels.
+- Generated files (`demos.ts`, `library.json`, migrations) are rewritten by their scripts; do not hand-edit.
+- Comments explain only non-obvious behaviour.
+- Conventional Commits, lowercase titles, one logical change per commit.
+- Run `pnpm check` before declaring work done.
