@@ -9,11 +9,11 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0b0b0f",
     "ios": {
-      "bundleIdentifier": "com.pnlt.liftlog",
+      "bundleIdentifier": "com.team3ae.liftlog",
       "supportsTablet": true
     },
     "android": {
-      "package": "com.pnlt.liftlog",
+      "package": "com.team3ae.liftlog",
       "adaptiveIcon": {
         "backgroundColor": "#0b0b0f",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
