@@ -1,0 +1,1 @@
+ALTER TABLE `exercises` ADD `frames` text DEFAULT '[]' NOT NULL;
