@@ -2,7 +2,7 @@ packages:
   - apps/*
   - packages/*
 
-# React Native libraries still assume a flat node_modules. See docs/adr/0001-monorepo-layout.md.
+# React Native libraries still assume a flat node_modules. See ../docs/adr/0001-monorepo-layout.md.
 nodeLinker: hoisted
 
 # Postinstall scripts are opt-in. None of these are needed: esbuild and unrs-resolver

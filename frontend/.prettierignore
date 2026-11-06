@@ -1,4 +1,7 @@
 pnpm-lock.yaml
+android/
+ios/
+.expo/
 apps/mobile/src/data/db/migrations/
 apps/mobile/.expo/
 apps/mobile/android/

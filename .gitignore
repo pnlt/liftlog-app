@@ -5,3 +5,24 @@ coverage/
 .env
 .env*.local
 .DS_Store
+
+# Local Expo output (the app itself lives in frontend/apps/mobile).
+.expo/
+android/
+ios/
+
+# Python backend.
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+backend/media/
+backend/data/
+backend/models_cache/
+
+# Keep examples versioned; real environment files remain local.
+.env.*
+!.env.example

@@ -1,6 +1,7 @@
 *                                     @pnlt
-/packages/contracts/                  @pnlt @NinITWB @Thiennguyen21it
-/apps/mobile/src/services/events.ts   @pnlt @NinITWB @Thiennguyen21it
-/apps/mobile/src/services/api/        @NinITWB @Thiennguyen21it
-/apps/mobile/src/features/coach/      @NinITWB @Thiennguyen21it
-/apps/mobile/src/data/db/             @pnlt @NinITWB @Thiennguyen21it
+/frontend/packages/contracts/                  @pnlt @NinITWB @Thiennguyen21it
+/frontend/apps/mobile/src/services/events.ts   @pnlt @NinITWB @Thiennguyen21it
+/frontend/apps/mobile/src/services/api/        @NinITWB @Thiennguyen21it
+/frontend/apps/mobile/src/features/coach/      @NinITWB @Thiennguyen21it
+/frontend/apps/mobile/src/data/db/             @pnlt @NinITWB @Thiennguyen21it
+/backend/                                     @NinITWB @Thiennguyen21it

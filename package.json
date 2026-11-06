@@ -1,21 +1,25 @@
 {
-  "name": "liftlog-app",
+  "name": "liftlog",
   "private": true,
   "packageManager": "pnpm@12.9.0",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "dev": "pnpm --filter @liftlog/mobile start",
-    "typecheck": "pnpm -r typecheck",
-    "lint": "pnpm -r lint",
-    "test": "pnpm -r test",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "check": "pnpm format:check && pnpm typecheck && pnpm lint && pnpm test"
-  },
-  "devDependencies": {
-    "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.5.14"
+    "install:frontend": "pnpm --dir frontend install",
+    "install:backend": "uv sync --directory backend",
+    "dev": "pnpm --dir frontend dev",
+    "dev:frontend": "pnpm --dir frontend dev",
+    "dev:backend": "uv run --directory backend uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "typecheck": "pnpm --dir frontend typecheck",
+    "lint": "pnpm --dir frontend lint && uv run --directory backend ruff check .",
+    "test": "pnpm --dir frontend test && uv run --directory backend pytest",
+    "format": "pnpm format:repo && pnpm --dir frontend format && uv run --directory backend ruff format .",
+    "format:check": "pnpm format:repo:check && pnpm --dir frontend format:check && uv run --directory backend ruff format --check .",
+    "format:repo": "pnpm --dir frontend exec prettier --config .prettierrc.json --write ../*.md ../package.json ../.github ../docs ../docker-compose*.yml ../backend/*.md ../backend/template-config.json",
+    "format:repo:check": "pnpm --dir frontend exec prettier --config .prettierrc.json --check ../*.md ../package.json ../.github ../docs ../docker-compose*.yml ../backend/*.md ../backend/template-config.json",
+    "check:frontend": "pnpm --dir frontend check",
+    "check:backend": "uv run --directory backend ruff check . && uv run --directory backend ruff format --check . && uv run --directory backend pytest",
+    "check": "pnpm format:repo:check && pnpm check:frontend && pnpm check:backend"
   }
 }

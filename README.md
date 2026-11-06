@@ -1,65 +1,99 @@
 # LiftLog
 
-Offline-first workout logger for Android and iOS. Expo SDK 58, React Native 0.88, TypeScript, NativeWind, Zustand, Drizzle on expo-sqlite, Clerk auth.
+Offline-first workout logging for Android and iOS, with a separate AI backend.
 
-## Layout
-
+```text
+frontend/                 Existing LiftLog pnpm workspace
+  apps/mobile/            Expo SDK 58 app, Clerk auth, local SQLite
+  apps/plan-agent/         Existing TypeScript plan-agent draft
+  packages/domain/        Pure training rules and tests
+  packages/contracts/     Zod boundary schemas
+backend/                  FastAPI backend generated from Full-Stack AI Agent Template
+  app/                    API, services, repositories, AI agents, database models
+  cli/                    Backend command-line tools
+  alembic/                PostgreSQL migrations
+  tests/                  Backend tests
+docs/                     Shared architecture and development documentation
 ```
-apps/mobile          Expo app (screens, UI, local database)
-packages/domain      pure TypeScript training logic: plans, progression, e1RM, stats, units
-packages/contracts   zod schemas shared by the app and any backend: exercises, workouts, events
-docs/adr             architecture decisions
-```
 
-Why it is split this way: [docs/adr/0001-monorepo-layout.md](docs/adr/0001-monorepo-layout.md).
+The mobile app retains Clerk sign-in and offline SQLite storage. The backend is
+a separately runnable foundation; workout sync and AI coach integration are not
+implemented by this repository reorganization.
 
-## Setup
+## Frontend
 
-Requires Node 22+, pnpm 12 (`corepack enable` picks the version from `package.json`), and Android Studio or a device with USB/wireless debugging. iOS builds need a Mac or EAS.
+Requires Node 22+, pnpm 12.9.0, and Android Studio or a device. iOS builds require
+a Mac or EAS. Run from the repository root:
 
 ```bash
-pnpm install
-cp apps/mobile/.env.example apps/mobile/.env
+pnpm install:frontend
+cp frontend/apps/mobile/.env.example frontend/apps/mobile/.env
 ```
 
-Fill `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` in `apps/mobile/.env`. Ask the project owner for the development key or read it from the Clerk dashboard (API keys). Leave the Sanity variables empty to use the bundled exercise catalog.
-
-## Run
-
-The app uses native modules, so Expo Go does not work. Build a development client once, then iterate with Metro:
+Fill `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` in that file. Leave the Sanity variables
+empty to use the bundled exercise catalog.
 
 ```bash
-cd apps/mobile
-pnpm android        # builds and installs the dev client, starts Metro
-pnpm start          # later: Metro only, the installed dev client reloads JS
+cd frontend/apps/mobile
+pnpm android
+pnpm start
 ```
 
-`android/` and `ios/` are generated from `app.json` (Continuous Native Generation) and ignored by git. Never edit them; change `app.json` or a config plugin and rebuild.
+Build the development client with `pnpm android` once, then use `pnpm start` for
+later sessions. The app uses native modules and requires a development client.
+From the repository root, `pnpm dev` also starts Metro.
 
-A standalone APK without Metro: `cd apps/mobile/android && ./gradlew assembleRelease` after one `pnpm android`. It is signed with the debug key, so it is for testing only.
+Details: [frontend/README.md](frontend/README.md) and
+[build and run guide](docs/guides/build-and-run.md).
+
+## Backend
+
+Requires Python 3.12+, [uv](https://docs.astral.sh/uv/), and PostgreSQL 16
+(or Docker Compose). Run from the repository root:
+
+```bash
+pnpm install:backend
+cp backend/.env.example backend/.env
+```
+
+Configure `IDP_JWKS_URL` and `IDP_ISSUER` for your Clerk instance, and
+`IDP_AUDIENCE` if your JWT includes an audience. Set `OPENAI_API_KEY` to use the
+template's AI agent. Generate `SECRET_KEY` and `API_KEY` with `openssl rand -hex 32`.
+
+```bash
+docker compose --env-file backend/.env up -d db
+uv run --directory backend alembic upgrade head
+pnpm dev:backend
+```
+
+API docs: <http://localhost:8000/docs>. Liveness:
+<http://localhost:8000/api/v1/health/live>.
+
+To run the API in Docker as well:
+
+```bash
+docker compose --env-file backend/.env up --build -d
+docker compose --env-file backend/.env exec app alembic upgrade head
+```
+
+Details and template provenance: [backend/README.md](backend/README.md).
 
 ## Checks
 
 ```bash
-pnpm check          # prettier, typecheck, lint, tests across the workspace
-pnpm test           # vitest in packages/*
+pnpm check             # Frontend checks, then backend Ruff and pytest
+pnpm check:frontend
+pnpm check:backend
 ```
 
-CI runs `pnpm check` on every push and pull request. `main` requires a green run.
+Frontend dependencies and its lockfile live in `frontend/`; Python dependencies
+and `uv.lock` live in `backend/`. Use `pnpm --dir frontend --filter <package>`
+for workspace commands, for example:
 
-## Common tasks
+```bash
+pnpm --dir frontend --filter @liftlog/mobile db:generate
+```
 
-| Task                        | How                                                                                           |
-| --------------------------- | --------------------------------------------------------------------------------------------- |
-| Add a dependency to the app | `cd apps/mobile && pnpm exec expo install <pkg>` (picks SDK-compatible versions)              |
-| Change the database schema  | edit `src/data/db/schema.ts`, then `pnpm --filter @liftlog/mobile db:generate`, commit output |
-| Update the exercise catalog | `cd apps/mobile && pnpm exec tsx scripts/import-exercises.mts`, bump `BUNDLED_REVISION`       |
-| Update demo art and clips   | `cd apps/mobile && pnpm exec tsx scripts/import-demos.mts` (needs `magick`, `ffmpeg`)         |
-
-`BUNDLED_REVISION` in `src/services/content/bundled.ts` makes installed apps re-import the bundled catalog on next launch.
-
-## Contributing
-
-Branch from `main`, open a pull request, get a review from the CODEOWNERS of the paths you touched. Commits follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `refactor:` ...). See [AGENTS.md](AGENTS.md) for code conventions and where new code belongs.
-
-Third-party content and licences: [CREDITS.md](CREDITS.md).
+See [AGENTS.md](AGENTS.md) for repository conventions and
+[CREDITS.md](CREDITS.md) for frontend content licenses. The generated backend
+retains the upstream [MIT license](backend/LICENSE).
