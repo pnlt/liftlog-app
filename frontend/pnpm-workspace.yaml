@@ -12,3 +12,6 @@ allowBuilds:
   core-js: false
   esbuild: false
   unrs-resolver: false
+
+patchedDependencies:
+  react-native-filament@1.11.0: patches/react-native-filament@1.11.0.patch

@@ -26,3 +26,5 @@ backend/models_cache/
 # Keep examples versioned; real environment files remain local.
 .env.*
 !.env.example
+
+assets/motion-reference/

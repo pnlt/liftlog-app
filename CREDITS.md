@@ -1,5 +1,20 @@
 # Credits
 
+Animated dumbbell curl `frontend/apps/mobile/assets/models/db-curl.glb` is built from
+Adobe Mixamo's X Bot character, which Mixamo licenses royalty-free for use in apps.
+The dumbbells, the highlighted biceps, the motion arrows, the grip pose and the four-second
+curl loop are added by LiftLog. The motion is hand-keyed, not motion capture.
+To regenerate it with Blender 5.2, run this from `frontend/apps/mobile`. The input is the glTF conversion of X Bot from the three.js examples (`examples/models/gltf/Xbot.glb`):
+
+```bash
+blender -b --python scripts/build-curl-model.py -- ~/Downloads/Xbot.glb
+```
+
+The motion reference is a 4-second excerpt (00:02–00:06) from
+[Intense Gym Workout with Dumbbells](https://www.pexels.com/video/intense-gym-workout-with-dumbbells-35075300/)
+by Instituto Alpha Fitness, under the [Pexels License](https://www.pexels.com/license/).
+It is not committed or bundled in the mobile app.
+
 Third-party content bundled with or loaded by LiftLog.
 
 | Content                                      | Source                                                          | Author                   | Licence                                                         |
