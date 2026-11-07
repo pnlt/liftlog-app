@@ -105,3 +105,43 @@ and real temporary SQLite conflict resolution. Cancelled choices preserve the
 frozen outbox; failed transactions preserve both versions. Independent review
 reported no findings and verified all 35 focused tests. No synchronization protocol,
 database schema, or account data was changed by this fix.
+
+## SharedArrayBuffer startup follow-up
+
+Opening Metro directly on localhost:8082 reproduced the missing SharedArrayBuffer
+error: that origin had neither isolation header, while the public web origin on
+localhost:8081 supplied both. Web startup now checks isolation before importing
+SQLite or routes. Development HTTP loopback visits on 8082 redirect to canonical
+localhost:8081 with their path, query, and fragment preserved. Other unsupported
+origins receive actionable setup feedback without touching storage.
+
+Ten startup regressions cover the capability check, loopback variants, fixed-origin
+redirect safety, and avoiding redirects on production or already-public origins.
+Independent review found no issues. An isolated Chromium replay starting on 8082
+finished on 8081/sign-in with isolation enabled, SharedArrayBuffer available, and
+no JavaScript errors. Root `pnpm check` passed: 172 frontend and 218 backend tests;
+15 tests requiring dedicated PostgreSQL databases were skipped.
+
+## Android USB API reconnection follow-up
+
+The tablet could sign in after a manual `adb reverse`, but unplugging USB removed
+the mapping. On reconnect the device was ready and FastAPI was healthy, while
+the API forwarding was absent. Native `pnpm android` and `pnpm start` now monitor
+ready ADB devices and restore the loopback API port from the same Expo env files
+and build mode. Root `pnpm dev` uses that launcher; `pnpm dev:android` builds and
+installs, and `pnpm android:usb` runs the watcher separately for existing APKs or
+raw Expo/Gradle/Android Studio workflows. Keep a development command running;
+using the app away from ADB requires a reachable API origin bundled in the app.
+
+Nineteen regressions cover configured ports, env precedence/modes, unauthorized
+and offline devices, preserving other mappings, reconnecting the same serial,
+retrying after ADB failure, and shutdown without overlapping polling. A live
+tablet test removed only the API mapping; the watcher restored it in 0.26 seconds.
+A subsequent HTTP request from the tablet returned 200 with API ready and
+PostgreSQL healthy. The user also confirmed signing in after physically unplugging
+and reconnecting USB.
+
+Independent review found one minor standalone `--help` URL-parsing issue; it was
+fixed and both USB and Android launcher help commands exited successfully. No
+blocking review findings remain. Root `pnpm check` passes: 191 frontend and 218
+backend tests; 15 tests needing dedicated PostgreSQL databases are skipped.

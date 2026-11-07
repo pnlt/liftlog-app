@@ -27,7 +27,9 @@ cp apps/mobile/.env.example apps/mobile/.env
 
 Fill `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` and `EXPO_PUBLIC_API_URL` in `apps/mobile/.env`.
 The API URL is the FastAPI origin without `/api/v1`. Use `http://10.0.2.2:8000`
-for Android emulators or the computer's LAN address for physical devices.
+for Android emulators. For a physical device over USB, keep `localhost` and
+forward the API port with ADB; see the [USB setup](../README.md#frontend).
+For testing over Wi-Fi, use the computer's LAN address instead.
 PostgreSQL holds acknowledged account data; SQLite caches it and queues offline
 edits. First use of an account needs online bootstrap. See the
 [synchronization guide](../docs/guides/synchronization.md).
@@ -54,6 +56,11 @@ cd apps/mobile
 pnpm android        # builds and installs the dev client, starts Metro
 pnpm start          # later: Metro only, the installed dev client reloads JS
 ```
+
+Both commands automatically forward a localhost API port over ADB and restore it
+after USB reconnection while the command stays running. For an installed APK or
+raw Expo/Gradle/Android Studio builds, run `pnpm android:usb` from the repository
+root in a separate terminal. The backend must be running on the configured API port.
 
 `android/` and `ios/` are generated from `app.json` (Continuous Native Generation) and ignored by git. Never edit them; change `app.json` or a config plugin and rebuild.
 

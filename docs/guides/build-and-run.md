@@ -145,10 +145,10 @@ cd /home/ninkuto/Projects/Workspace/ai-projects/liftlog-app/frontend/apps/mobile
 pnpm android
 ```
 
-This runs `expo run:android`: generates the native Android directory when absent, compiles and installs a development client, and starts Metro. To choose a target explicitly:
+This starts the API USB forwarding watcher and runs `expo run:android`: generates the native Android directory when absent, compiles and installs a development client, and starts Metro. To choose a target explicitly:
 
 ```bash
-pnpm exec expo run:android --device
+pnpm android --device
 ```
 
 Expected result: MYØS opens, Metro serves the JavaScript bundle, and the sign-in screen appears. After successful sign-in, a fresh installation enters onboarding. This project requires a **development client**, not Expo Go. See [Expo's local build workflow](https://docs.expo.dev/guides/local-app-development/).
@@ -163,6 +163,14 @@ pnpm dev
 ```
 
 Alternatively, run `pnpm start` from `frontend/apps/mobile`. Both start Metro without compiling a new native app. Use the terminal's Android launch shortcut or open the installed development client. Keep Metro running while developing.
+
+These pnpm commands also monitor ADB devices when `EXPO_PUBLIC_API_URL` points to
+localhost. They forward that API port automatically and restore it after USB
+reconnection, so a new build does not need another manual `adb reverse`. Run the
+backend on the same port. If using raw Expo CLI, Android Studio, Gradle, or an
+installed APK without Metro, keep `pnpm android:usb` running from the repository
+root. For production-mode `.env` files with that standalone watcher, use
+`NODE_ENV=production pnpm android:usb`. See the [USB setup](../../README.md#frontend).
 
 JavaScript/TypeScript changes usually reload through Metro. Native dependency and config-plugin changes require rebuilding the development client. Native directories are generated and ignored by git; change `app.json` or config plugins instead of editing generated native files.
 

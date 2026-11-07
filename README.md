@@ -39,7 +39,8 @@ cp frontend/apps/mobile/.env.example frontend/apps/mobile/.env
 
 Fill `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` and `EXPO_PUBLIC_API_URL` in that file.
 Use the FastAPI origin without `/api/v1`; Android emulators use
-`http://10.0.2.2:8000`, and physical devices need the computer's LAN address.
+`http://10.0.2.2:8000`. Physical devices can use USB forwarding as described below,
+or the computer's LAN address when testing over Wi-Fi.
 
 For web development:
 
@@ -51,6 +52,10 @@ Open <http://localhost:8081>. The development launcher uses port 8082 internally
 for Metro and applies the isolation headers required by SQLite to every response,
 including HTML. Use the public port 8081. Browser startup waits for SQLite's worker
 before loading routes and hydrating synchronous stores.
+If a development browser opens the internal loopback port 8082, startup redirects
+to `http://localhost:8081` before loading SQLite, preserving the route, query, and
+fragment. Other hosts must supply HTTPS and both isolation headers; unsupported
+pages show a setup message instead of opening synchronous web storage.
 Running `pnpm dev:web` again prints the URL and exits successfully when this checkout's
 launcher is already running. An unrelated service or another checkout on port 8081
 still fails; stop that process from its own terminal before trying again.
@@ -67,7 +72,44 @@ pnpm start
 
 Build the development client with `pnpm android` once, then use `pnpm start` for
 later sessions. The app uses native modules and requires a development client.
-From the repository root, `pnpm dev` also starts Metro.
+From the repository root, `pnpm dev:android` builds and installs Android, and
+`pnpm dev` starts Metro for later sessions.
+
+For a physical Android phone connected through USB, enable **USB debugging** and
+accept the authorization prompt on the phone. `localhost` refers to the phone;
+use [ADB reverse forwarding](https://developer.android.com/develop/ui/views/layout/webapps/access-local-server)
+to reach the computer's backend. For `EXPO_PUBLIC_API_URL=http://localhost:8001`,
+start the backend in one terminal:
+
+```bash
+pnpm dev:backend --port 8001
+```
+
+`pnpm android`, `pnpm start`, and root `pnpm dev` automatically monitor connected
+Android devices and forward the port from `EXPO_PUBLIC_API_URL` when it points to
+localhost. They restore missing forwarding within about two seconds after USB
+reconnection. Keep the development terminal running and authorize USB debugging.
+The native launcher reads the same Expo `.env` precedence and development/release
+mode as the build; it does not change the API URL bundled in the app.
+
+For an already installed APK or when using `expo run:android` directly, Gradle,
+or Android Studio, keep this separate watcher running from the repository root:
+
+```bash
+pnpm android:usb
+```
+
+If the API uses port 8000, use 8000 in the URL, backend command, and both reverse
+ports when forwarding manually. To inspect the connection or set it up manually:
+
+```bash
+adb devices                     # the phone must show status "device"
+adb -d reverse --list           # confirm the API port is forwarded
+adb -d reverse tcp:8001 tcp:8001 # one-time forwarding, lost on disconnect
+```
+
+This setup needs an active ADB connection; builds used away from the development
+computer need a reachable API URL bundled at build time.
 
 Details: [frontend/README.md](frontend/README.md) and
 [build and run guide](docs/guides/build-and-run.md).
