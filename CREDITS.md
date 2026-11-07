@@ -1,19 +1,15 @@
 # Credits
 
-Animated dumbbell curl `frontend/apps/mobile/assets/models/db-curl.glb` is built from
-Adobe Mixamo's X Bot character, which Mixamo licenses royalty-free for use in apps.
-The dumbbells, the highlighted biceps, the motion arrows, the grip pose and the four-second
-curl loop are added by LiftLog. The motion is hand-keyed, not motion capture.
-To regenerate it with Blender 5.2, run this from `frontend/apps/mobile`. The input is the glTF conversion of X Bot from the three.js examples (`examples/models/gltf/Xbot.glb`):
+Animated exercise model `frontend/apps/mobile/assets/models/exercises.glb` is built from
+a LiftLog-generated, Mixamo-rigged Fighter character. The build strips its control rig and
+colour textures, keeps its normal map, and smooths the hair into a bald dome.
+The equipment, the per-muscle material zones, the motion arrows, the grip pose and the
+17 standing free-weight exercise loops are added by LiftLog. The motion is hand-keyed, not motion capture.
+To regenerate it with Blender 5.2, run this from `frontend/apps/mobile`. The textures directory must hold the Fighter's `*_normal.png` map:
 
 ```bash
-blender -b --python scripts/build-curl-model.py -- ~/Downloads/Xbot.glb
+blender -b --disable-autoexec --python scripts/build-exercise-model.py -- ~/Downloads/Fighter.blend ~/Downloads/textures
 ```
-
-The motion reference is a 4-second excerpt (00:02–00:06) from
-[Intense Gym Workout with Dumbbells](https://www.pexels.com/video/intense-gym-workout-with-dumbbells-35075300/)
-by Instituto Alpha Fitness, under the [Pexels License](https://www.pexels.com/license/).
-It is not committed or bundled in the mobile app.
 
 Third-party content bundled with or loaded by LiftLog.
 

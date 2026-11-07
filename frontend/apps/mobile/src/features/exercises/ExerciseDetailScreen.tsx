@@ -2,7 +2,6 @@ import { bestE1rm, toDisplay } from '@liftlog/domain'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { View } from 'react-native'
-import dbCurl from '@/assets/models/db-curl.glb'
 import { useUserId } from '@/features/auth/use-user-id'
 import { useSettings } from '@/features/settings/store'
 import { useExercise, type ExerciseRow } from '@/data/exercises'
@@ -10,7 +9,7 @@ import { useExerciseSets } from '@/data/workout-queries'
 import { formatDate } from '@/lib/format'
 import { Card, EmptyState, Loading, Screen, Text } from '@/ui'
 import { DEMO_VIDEOS } from '@/services/content/demos'
-import { Exercise3DDemo } from './Exercise3DDemo'
+import { Exercise3DDemo, exerciseAnimation } from './Exercise3DDemo'
 import { ExerciseDemo, useDemoFrames } from './ExerciseDemo'
 import { EQUIPMENT_LABELS, MUSCLE_LABELS } from './labels'
 
@@ -34,11 +33,14 @@ function Demo({ exercise }: { exercise: ExerciseRow }) {
   const { frames, art } = useDemoFrames(exercise)
   const clip = DEMO_VIDEOS[exercise.id]
   if (exercise.videoUrl) return <DemoVideo source={exercise.videoUrl} />
-  if (exercise.id === 'db-curl' || exercise.id === 'fedb-dumbbell-bicep-curl')
+  const animation = exerciseAnimation(exercise.id)
+  if (animation)
     return (
       <View className="gap-2">
-        <Exercise3DDemo source={dbCurl} />
-        <Text variant="caption">Biceps highlighted · drag to rotate</Text>
+        <Exercise3DDemo animation={animation} highlights={exercise.primaryMuscles} />
+        <Text variant="caption">
+          {exercise.primaryMuscles.map((m) => MUSCLE_LABELS[m]).join(', ')} highlighted · drag to rotate
+        </Text>
       </View>
     )
   if (clip)

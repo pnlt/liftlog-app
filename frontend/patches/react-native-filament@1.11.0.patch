@@ -60,6 +60,30 @@ index 67eceeeec711583358c473e1317f0cdc2c6d6968..8e6f2c1a4f0d1810a6bc7a76d9bc9176
  }
  //# sourceMappingURL=withCleanupScope.js.map
 \ No newline at end of file
+diff --git a/lib/typescript/types/MaterialInstance.d.ts b/lib/typescript/types/MaterialInstance.d.ts
+index 2fa4c2e81599ae01c7b76c2e75ab4760fb7ad1f9..88a2678e9bc1c6622be1eb1c376e5ea04dc6c3ea 100644
+--- a/lib/typescript/types/MaterialInstance.d.ts
++++ b/lib/typescript/types/MaterialInstance.d.ts
+@@ -15,6 +15,6 @@ export interface MaterialInstance {
+     getMat3fParameter(name: string): Mat3f;
+     getFloat3Parameter(name: string): Float3;
+     getFloat4Parameter(name: string): Float4;
+-    readonly name: string;
++    readonly getName: string;
+ }
+ //# sourceMappingURL=MaterialInstance.d.ts.map
+\ No newline at end of file
+diff --git a/src/types/MaterialInstance.ts b/src/types/MaterialInstance.ts
+index 513c532acc7ef2ace798a1d4697572ae7975e309..74e483d94649df220557a33f2b1dba42f1c54a1e 100644
+--- a/src/types/MaterialInstance.ts
++++ b/src/types/MaterialInstance.ts
+@@ -18,5 +18,5 @@ export interface MaterialInstance {
+   getMat3fParameter(name: string): Mat3f
+   getFloat3Parameter(name: string): Float3
+   getFloat4Parameter(name: string): Float4
+-  readonly name: string
++  readonly getName: string
+ }
 diff --git a/src/utilities/withCleanupScope.ts b/src/utilities/withCleanupScope.ts
 index 20ec04e4a14b5a6aea36ddce86c747cd122ebf5c..d22d4cdf632ce5a336052d7ff39c518c39a1011b 100644
 --- a/src/utilities/withCleanupScope.ts
