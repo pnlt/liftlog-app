@@ -1,0 +1,26 @@
+{
+  "name": "@myos/plan-agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc",
+    "lint": "tsc --noUnusedLocals --noUnusedParameters",
+    "test": "vitest run",
+    "generate": "tsx src/cli.ts",
+    "publish": "tsx src/publish.ts"
+  },
+  "dependencies": {
+    "@myos/contracts": "workspace:*",
+    "@myos/domain": "workspace:*",
+    "@langchain/langgraph": "^1.2.0",
+    "@langchain/google": "^0.2.12",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "~6.0.3",
+    "vitest": "^5.0.5"
+  }
+}

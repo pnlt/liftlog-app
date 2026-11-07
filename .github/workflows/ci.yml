@@ -8,6 +8,9 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -15,8 +18,40 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --dir .. format:repo:check
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
+
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: liftlog
+          POSTGRES_PASSWORD: liftlog_test
+          POSTGRES_DB: liftlog_sync_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U liftlog -d liftlog_sync_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      FITNESS_TEST_DATABASE_URL: postgresql+asyncpg://liftlog:liftlog_test@localhost:5432/liftlog_sync_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          python-version: '3.12'
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - run: uv sync --directory backend --frozen
+      - run: uv run --directory backend ruff check .
+      - run: uv run --directory backend ruff format --check .
+      - run: uv run --directory backend pytest

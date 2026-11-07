@@ -1,8 +1,8 @@
-apps/mobile/babel.config.js -banned-languages
-apps/mobile/eslint.config.js -banned-languages
-apps/mobile/metro.config.js -banned-languages
-apps/mobile/tailwind.config.js -banned-languages
-apps/mobile/src/ui/colors.js -banned-languages
-apps/mobile/src/data/db/migrations/migrations.js -banned-languages
-apps/mobile/src/services/content/demos.ts -comment-budget
-apps/mobile/src/data/db/migrations/** -comment-budget
+frontend/apps/mobile/babel.config.js -banned-languages
+frontend/apps/mobile/eslint.config.js -banned-languages
+frontend/apps/mobile/metro.config.js -banned-languages
+frontend/apps/mobile/tailwind.config.js -banned-languages
+frontend/apps/mobile/src/ui/colors.js -banned-languages
+frontend/apps/mobile/src/data/db/migrations/migrations.js -banned-languages
+frontend/apps/mobile/src/services/content/demos.ts -comment-budget
+frontend/apps/mobile/src/data/db/migrations/** -comment-budget
