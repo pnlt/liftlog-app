@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNotNull, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm'
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite'
 import { db } from './db/client'
 import { workoutExercises, workoutSessions, workoutSets } from './db/schema'
@@ -13,17 +13,38 @@ const withChildren = {
   },
 }
 
-export function useActiveSession(userId: string) {
+export function useActiveSession(userId: string, sessionId?: string) {
   return useLiveQuery(
-    db.query.workoutSessions.findFirst({ where: activeWhere(userId), with: withChildren }),
+    db.query.workoutSessions.findFirst({
+      where: and(activeWhere(userId), sessionId ? eq(workoutSessions.id, sessionId) : undefined),
+      with: withChildren,
+    }),
+    [userId, sessionId],
+  )
+}
+
+export function useActiveSessions(userId: string) {
+  return useLiveQuery(
+    db.query.workoutSessions.findMany({
+      where: activeWhere(userId),
+      with: withChildren,
+      orderBy: [desc(workoutSessions.startedAt)],
+    }),
     [userId],
   )
 }
 
-export function useSession(sessionId: string) {
+export function useSession(userId: string, sessionId: string) {
   return useLiveQuery(
-    db.query.workoutSessions.findFirst({ where: eq(workoutSessions.id, sessionId), with: withChildren }),
-    [sessionId],
+    db.query.workoutSessions.findFirst({
+      where: and(
+        eq(workoutSessions.id, sessionId),
+        eq(workoutSessions.userId, userId),
+        isNull(workoutSessions.deletedAt),
+      ),
+      with: withChildren,
+    }),
+    [userId, sessionId],
   )
 }
 
@@ -34,7 +55,7 @@ const completedSetsJoin = and(
   isNotNull(workoutSets.completedAt),
 )
 
-export function useHistory(userId: string, limit = 200) {
+export function useHistory(userId: string, limit: number | null = 200) {
   return useLiveQuery(
     db
       .select({
@@ -52,7 +73,7 @@ export function useHistory(userId: string, limit = 200) {
       .where(finishedWhere(userId))
       .groupBy(workoutSessions.id)
       .orderBy(desc(workoutSessions.startedAt))
-      .limit(limit),
+      .limit(limit ?? -1),
     [userId, limit],
   )
 }

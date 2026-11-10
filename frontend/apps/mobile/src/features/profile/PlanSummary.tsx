@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { toDisplay, type Plan, type Unit } from '@liftlog/domain'
+import { toDisplay, type Plan, type Unit } from '@myos/domain'
 import type { ComponentProps } from 'react'
 import { View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'

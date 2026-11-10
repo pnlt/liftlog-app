@@ -13,7 +13,7 @@ pnpm monorepo, `nodeLinker: hoisted` (React Native needs a flat `node_modules`).
 | Path                 | Owns                                                       | May import                       |
 | -------------------- | ---------------------------------------------------------- | -------------------------------- |
 | `packages/domain`    | training rules: plans, progression, e1RM, stats, units     | nothing (pure TS, no RN, no I/O) |
-| `packages/contracts` | zod schemas for data crossing a boundary (DB, CMS, server) | `zod`, `@liftlog/domain` types   |
+| `packages/contracts` | zod schemas for data crossing a boundary (DB, CMS, server) | `zod`, `@myos/domain` types      |
 | `apps/mobile`        | screens, UI, local SQLite, auth, device APIs               | both packages                    |
 
 Logic that does not need React or a device goes in `packages/domain` with a vitest test next to it. Anything a backend must agree on goes in `packages/contracts`.
@@ -35,15 +35,19 @@ Imports use `@/` for `src/`.
 These are the integration points. Extend them instead of importing another feature's internals.
 
 - **Domain events.** `domainEvents.subscribe` in `services/events.ts` receives events such as `workout.completed` (schema in `packages/contracts/src/events.ts`). Gamification (XP, streak rewards, badges) and backend sync subscribe here. New events: add the zod schema to `contracts`, extend the `DomainEvent` union, emit from the feature that owns the fact.
-- **Backend API.** The Python/FastAPI server lives in `../backend` and validates boundary data with Pydantic. Keep its API schemas aligned with `@liftlog/contracts`. The app's client goes in `apps/mobile/src/services/api/` and authenticates with the Clerk session token (`useAuth().getToken()`), never with a shared key.
+- **Backend API.** The Python/FastAPI server lives in `../backend` and validates boundary data with Pydantic. Keep its API schemas aligned with `@myos/contracts`. The app's client goes in `apps/mobile/src/services/api/` and authenticates with the Clerk session token (`useAuth().getToken()`), never with a shared key.
 - **AI coach.** `features/coach/coach.ts` defines `CoachClient`. Implement it against backend endpoints. Model API keys live on the server only; anything in the app bundle is public.
 - **Content.** Implement `ExerciseSource` (`services/content/source.ts`) for a new catalog source.
 
-The app is offline-first: SQLite is the source of truth on the device. Sync must never block logging a set.
+PostgreSQL is authoritative for acknowledged account data. SQLite stores account-scoped
+projections and a durable offline outbox. Every local edit and its outbox intent commit
+atomically; sync must never block logging a set. `data/sync/` owns persistence and
+`services/sync/` owns authenticated foreground synchronization. Keep transmitted mutation
+IDs/bodies immutable and resolve version conflicts explicitly. See ADR 0003.
 
 ## Database
 
-Schema: `apps/mobile/src/data/db/schema.ts`. After changing it run `pnpm --filter @liftlog/mobile db:generate` and commit the generated SQL, snapshot and `migrations.js`. Never edit an existing migration; add a new one.
+Schema: `apps/mobile/src/data/db/schema.ts`. After changing it run `pnpm --filter @myos/mobile db:generate` and commit the generated SQL, snapshot and `migrations.js`. Never edit an existing migration; add a new one.
 
 ## Rules
 

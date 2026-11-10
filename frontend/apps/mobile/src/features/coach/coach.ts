@@ -1,5 +1,5 @@
-import type { UserProfile } from '@liftlog/contracts'
-import type { Plan } from '@liftlog/domain'
+import type { UserProfile } from '@myos/contracts'
+import type { Plan } from '@myos/domain'
 
 /** AI coaching seam, not implemented. API keys cannot ship in the binary, so this wraps Clerk-authed backend endpoints. */
 export interface CoachClient {

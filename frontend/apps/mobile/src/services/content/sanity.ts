@@ -3,7 +3,7 @@ import type { ExerciseSource } from './source'
 const API_VERSION = 'v2025-02-19'
 
 /** Sanity `exercise` doc: slug, name, primaryMuscles[], secondaryMuscles[], equipment[], load,
- instructions[], tips[], image, video (file). Enum values must match @liftlog/domain. */
+ instructions[], tips[], image, video (file). Enum values must match @myos/domain. */
 const QUERY = `*[_type == "exercise" && defined(slug.current)]{
   "id": slug.current,
   name,

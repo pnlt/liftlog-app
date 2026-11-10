@@ -11,7 +11,7 @@ To regenerate it with Blender 5.2, run this from `frontend/apps/mobile`. The tex
 blender -b --disable-autoexec --python scripts/build-exercise-model.py -- ~/Downloads/Fighter.blend ~/Downloads/textures
 ```
 
-Third-party content bundled with or loaded by LiftLog.
+Third-party content bundled with or loaded by MYØS.
 
 | Content                                      | Source                                                          | Author                   | Licence                                                         |
 | -------------------------------------------- | --------------------------------------------------------------- | ------------------------ | --------------------------------------------------------------- |

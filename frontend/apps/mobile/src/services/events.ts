@@ -1,4 +1,4 @@
-import type { DomainEvent } from '@liftlog/contracts'
+import type { DomainEvent } from '@myos/contracts'
 
 type Listener = (event: DomainEvent) => void | Promise<void>
 

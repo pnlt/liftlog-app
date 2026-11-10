@@ -1,0 +1,1 @@
+ALTER TABLE `sync_accounts` ADD `backend_user_id` text;

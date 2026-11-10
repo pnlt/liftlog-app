@@ -1,4 +1,4 @@
-import type { Muscle } from '@liftlog/domain'
+import type { Muscle } from '@myos/domain'
 import { Image, type ImageSource } from 'expo-image'
 import { router } from 'expo-router'
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'

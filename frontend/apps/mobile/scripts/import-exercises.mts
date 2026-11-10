@@ -1,8 +1,8 @@
 /** Regenerates library.json from free-exercise-db (public domain), pinned so the catalog only changes with this file.
  Run from apps/mobile: `pnpm exec tsx scripts/import-exercises.mts`. */
 import { writeFileSync } from 'node:fs'
-import { ExerciseSchema, type Exercise } from '@liftlog/contracts'
-import type { Equipment, Load, Muscle } from '@liftlog/domain'
+import { ExerciseSchema, type Exercise } from '@myos/contracts'
+import type { Equipment, Load, Muscle } from '@myos/domain'
 import { SEED_EXERCISES } from '../src/services/content/seed'
 
 const COMMIT = 'f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5'

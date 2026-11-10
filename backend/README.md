@@ -1,4 +1,4 @@
-# LiftLog backend
+# MYØS backend
 
 FastAPI, PostgreSQL, SQLAlchemy, Alembic, Pydantic AI, and delegated JWT/JWKS
 authentication. This backend was rendered from the locally provided
@@ -7,10 +7,11 @@ authentication. This backend was rendered from the locally provided
 The original license is preserved in [LICENSE](LICENSE), and generation choices
 are recorded in [template-config.json](template-config.json).
 
-The template's Next.js frontend is disabled because LiftLog's Expo app lives in
+The template's Next.js frontend is disabled because MYØS's Expo app lives in
 `../frontend`. Optional RAG, queues, billing, and telemetry are disabled. The
-existing workout, onboarding, and coach flows remain unchanged; this backend
-does not yet provide LiftLog workout sync or a workout-plan endpoint.
+fitness API stores account profiles, accepted plan snapshots, settings, and
+workouts in PostgreSQL. Versioned mutations and a per-account change feed support
+the mobile SQLite cache/outbox. AI coaching and template generation remain separate.
 
 ## Local development
 
@@ -21,6 +22,7 @@ uv sync --directory backend --frozen
 cp backend/.env.example backend/.env
 docker compose --env-file backend/.env up -d db
 uv run --directory backend alembic upgrade head
+uv run --directory backend myos cmd import-catalog
 pnpm dev:backend
 ```
 
@@ -28,6 +30,15 @@ Configure database credentials in `backend/.env`. Generate separate values for
 `SECRET_KEY` and `API_KEY` with `openssl rand -hex 32`. `OPENAI_API_KEY` is needed
 for model calls, and `AI_MODEL` selects the model used by the template agent.
 Health checks, API documentation, and tests do not require a model key.
+The checked-in catalog artifact contains 664 validated bundled exercises. Regenerate
+it with `pnpm --dir frontend --filter @myos/mobile catalog:export` after changing
+the source catalog. Import validates the entire immutable release before publishing.
+See the [synchronization guide](../docs/guides/synchronization.md) for offline
+semantics, import safeguards, and real PostgreSQL test configuration.
+
+The Python distribution and primary management command use the ASCII identifier
+`myos`; `liftlog` remains a CLI alias for existing scripts. The existing PostgreSQL
+database name `liftlog` is retained so the rebrand uses the same data.
 
 API documentation is at <http://localhost:8000/docs>, with OpenAPI at
 <http://localhost:8000/api/v1/openapi.json>. `/api/v1/health/live` checks process

@@ -1,11 +1,13 @@
-import type { Unit } from '@liftlog/domain'
+import type { Unit } from '@myos/domain'
 import { router } from 'expo-router'
-import { Alert, Pressable, View } from 'react-native'
+import { useState } from 'react'
+import { Pressable, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import type { ExerciseRow } from '@/data/exercises'
 import type { SessionWithChildren } from '@/data/workout-queries'
 import { addSet, removeExercise } from '@/data/workouts'
 import { ExerciseDemo } from '@/features/exercises/ExerciseDemo'
+import { confirmAction, showMessage } from '@/lib/dialogs'
 import { Button, Text } from '@/ui'
 import { fadeIn, fadeOut, listLayout } from '@/ui/motion'
 import { SetRow } from './SetRow'
@@ -13,6 +15,7 @@ import { SetRow } from './SetRow'
 type Block = SessionWithChildren['exercises'][number]
 
 interface ExerciseBlockProps {
+  userId: string
   sessionId: string
   block: Block
   exercise: ExerciseRow | undefined
@@ -22,6 +25,7 @@ interface ExerciseBlockProps {
 }
 
 export function ExerciseBlock({
+  userId,
   sessionId,
   block,
   exercise,
@@ -29,14 +33,25 @@ export function ExerciseBlock({
   restSeconds,
   onEditSet,
 }: ExerciseBlockProps) {
-  const load = exercise?.load ?? 'weight'
+  const [removing, setRemoving] = useState(false)
+  const load = exercise?.load ?? block.exerciseLoad ?? 'weight'
   let working = 0
 
-  function confirmRemove() {
-    Alert.alert('Remove exercise?', 'Its sets in this workout will be deleted.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: () => void removeExercise(sessionId, block.id) },
-    ])
+  async function confirmRemove() {
+    if (removing) return
+    setRemoving(true)
+    try {
+      const confirmed = await confirmAction('Remove exercise?', 'Its sets in this workout will be deleted.', {
+        confirmLabel: 'Remove',
+        destructive: true,
+      })
+      if (!confirmed) return
+      await removeExercise(userId, sessionId, block.id)
+    } catch {
+      showMessage('Could not remove exercise', 'Your exercise and sets are saved. Try again.')
+    } finally {
+      setRemoving(false)
+    }
   }
 
   return (
@@ -57,9 +72,9 @@ export function ExerciseBlock({
           </Pressable>
         )}
         <Text variant="heading" className="flex-1" numberOfLines={1}>
-          {exercise?.name ?? block.exerciseId}
+          {exercise?.name ?? block.exerciseName ?? block.exerciseId}
         </Text>
-        <Button label="Remove" size="sm" variant="ghost" onPress={confirmRemove} />
+        <Button label="Remove" size="sm" variant="ghost" loading={removing} onPress={confirmRemove} />
       </View>
       <View className="flex-row gap-2 px-1">
         <Text variant="muted" className="w-10 text-center">
@@ -80,6 +95,7 @@ export function ExerciseBlock({
         return (
           <SetRow
             key={set.id}
+            userId={userId}
             sessionId={sessionId}
             set={set}
             label={label}
@@ -94,7 +110,7 @@ export function ExerciseBlock({
         label="Add set"
         size="sm"
         variant="secondary"
-        onPress={() => void addSet(sessionId, block.id)}
+        onPress={() => void addSet(userId, sessionId, block.id)}
       />
     </Animated.View>
   )

@@ -1,11 +1,11 @@
 [project]
-name = "liftlog"
+name = "myos"
 version = "0.1.0"
-description = "LiftLog AI backend"
+description = "MYØS AI backend"
 requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [
-    { name = "LiftLog contributors", email = "dev@liftlog.app" },
+    { name = "MYØS contributors" },
 ]
 
 dependencies = [
@@ -53,6 +53,7 @@ dev = [
 ]
 
 [project.scripts]
+myos = "cli.commands:main"
 liftlog = "cli.commands:main"
 
 [build-system]

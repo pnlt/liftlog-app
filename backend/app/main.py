@@ -68,9 +68,9 @@ def create_app() -> FastAPI:
 
     app = FastAPI(
         title=settings.PROJECT_NAME,
-        summary="FastAPI application",
+        summary="MYØS API",
         description="""
-LiftLog AI backend
+MYØS AI backend
 
 ## Features
 - **Authentication**: JWT-based authentication with refresh tokens
@@ -89,8 +89,7 @@ LiftLog AI backend
         redoc_url=redoc_url,
         openapi_tags=openapi_tags,
         contact={
-            "name": "LiftLog contributors",
-            "email": "dev@liftlog.app",
+            "name": "MYØS contributors",
         },
         license_info={
             "name": "MIT",

@@ -1,9 +1,14 @@
-# LiftLog
+# MYØS
+
+**Myo (muscle) + OS — the operating system for muscle.**
 
 Offline-first workout logging for Android and iOS, with a separate AI backend.
 
+Brand name: **MYØS**. Technical slug and package scope: `myos` / `@myos`.
+See the [brand and compatibility notes](docs/brand.md).
+
 ```text
-frontend/                 Existing LiftLog pnpm workspace
+frontend/                 Existing MYØS pnpm workspace
   apps/mobile/            Expo SDK 58 app, Clerk auth, local SQLite
   apps/plan-agent/         Existing TypeScript plan-agent draft
   packages/domain/        Pure training rules and tests
@@ -16,22 +21,48 @@ backend/                  FastAPI backend generated from Full-Stack AI Agent Tem
 docs/                     Shared architecture and development documentation
 ```
 
-The mobile app retains Clerk sign-in and offline SQLite storage. The backend is
-a separately runnable foundation; workout sync and AI coach integration are not
-implemented by this repository reorganization.
+The mobile app uses Clerk sign-in, PostgreSQL as the authoritative account database,
+and SQLite as a durable offline cache/outbox. Profile, settings, accepted plans, and
+workouts synchronize through FastAPI; logging a set never waits for the network.
+The AI coach and template-generation drafts are separate from synchronization.
 
 ## Frontend
 
-Requires Node 22+, pnpm 12.9.0, and Android Studio or a device. iOS builds require
-a Mac or EAS. Run from the repository root:
+Requires Node 22+ and pnpm 12.9.0. Web development runs in a browser; Android
+Studio or a device is only needed for native Android development. iOS builds
+require a Mac or EAS. Run from the repository root:
 
 ```bash
 pnpm install:frontend
 cp frontend/apps/mobile/.env.example frontend/apps/mobile/.env
 ```
 
-Fill `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` in that file. Leave the Sanity variables
-empty to use the bundled exercise catalog.
+Fill `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` and `EXPO_PUBLIC_API_URL` in that file.
+Use the FastAPI origin without `/api/v1`; Android emulators use
+`http://10.0.2.2:8000`. Physical devices can use USB forwarding as described below,
+or the computer's LAN address when testing over Wi-Fi.
+
+For web development:
+
+```bash
+pnpm dev:web
+```
+
+Open <http://localhost:8081>. The development launcher uses port 8082 internally
+for Metro and applies the isolation headers required by SQLite to every response,
+including HTML. Use the public port 8081. Browser startup waits for SQLite's worker
+before loading routes and hydrating synchronous stores.
+If a development browser opens the internal loopback port 8082, startup redirects
+to `http://localhost:8081` before loading SQLite, preserving the route, query, and
+fragment. Other hosts must supply HTTPS and both isolation headers; unsupported
+pages show a setup message instead of opening synchronous web storage.
+Running `pnpm dev:web` again prints the URL and exits successfully when this checkout's
+launcher is already running. An unrelated service or another checkout on port 8081
+still fails; stop that process from its own terminal before trying again.
+Google sign-in uses a full-page redirect and completes at `/sso-callback`, because
+the SQLite isolation headers do not support the native popup authentication flow.
+
+For native development:
 
 ```bash
 cd frontend/apps/mobile
@@ -41,7 +72,44 @@ pnpm start
 
 Build the development client with `pnpm android` once, then use `pnpm start` for
 later sessions. The app uses native modules and requires a development client.
-From the repository root, `pnpm dev` also starts Metro.
+From the repository root, `pnpm dev:android` builds and installs Android, and
+`pnpm dev` starts Metro for later sessions.
+
+For a physical Android phone connected through USB, enable **USB debugging** and
+accept the authorization prompt on the phone. `localhost` refers to the phone;
+use [ADB reverse forwarding](https://developer.android.com/develop/ui/views/layout/webapps/access-local-server)
+to reach the computer's backend. For `EXPO_PUBLIC_API_URL=http://localhost:8001`,
+start the backend in one terminal:
+
+```bash
+pnpm dev:backend --port 8001
+```
+
+`pnpm android`, `pnpm start`, and root `pnpm dev` automatically monitor connected
+Android devices and forward the port from `EXPO_PUBLIC_API_URL` when it points to
+localhost. They restore missing forwarding within about two seconds after USB
+reconnection. Keep the development terminal running and authorize USB debugging.
+The native launcher reads the same Expo `.env` precedence and development/release
+mode as the build; it does not change the API URL bundled in the app.
+
+For an already installed APK or when using `expo run:android` directly, Gradle,
+or Android Studio, keep this separate watcher running from the repository root:
+
+```bash
+pnpm android:usb
+```
+
+If the API uses port 8000, use 8000 in the URL, backend command, and both reverse
+ports when forwarding manually. To inspect the connection or set it up manually:
+
+```bash
+adb devices                     # the phone must show status "device"
+adb -d reverse --list           # confirm the API port is forwarded
+adb -d reverse tcp:8001 tcp:8001 # one-time forwarding, lost on disconnect
+```
+
+This setup needs an active ADB connection; builds used away from the development
+computer need a reachable API URL bundled at build time.
 
 Details: [frontend/README.md](frontend/README.md) and
 [build and run guide](docs/guides/build-and-run.md).
@@ -63,8 +131,13 @@ template's AI agent. Generate `SECRET_KEY` and `API_KEY` with `openssl rand -hex
 ```bash
 docker compose --env-file backend/.env up -d db
 uv run --directory backend alembic upgrade head
+uv run --directory backend myos cmd import-catalog
 pnpm dev:backend
 ```
+
+If another service uses port 8000, run `pnpm dev:backend --port 8001` and open
+<http://localhost:8001/docs>. Backend CORS permits the frontend at
+`http://localhost:8081`; keep that origin in `backend/.env` when customizing CORS.
 
 API docs: <http://localhost:8000/docs>. Liveness:
 <http://localhost:8000/api/v1/health/live>.
@@ -77,6 +150,8 @@ docker compose --env-file backend/.env exec app alembic upgrade head
 ```
 
 Details and template provenance: [backend/README.md](backend/README.md).
+Account setup, migration, offline behavior, and recovery:
+[synchronization guide](docs/guides/synchronization.md).
 
 ## Checks
 
@@ -91,7 +166,7 @@ and `uv.lock` live in `backend/`. Use `pnpm --dir frontend --filter <package>`
 for workspace commands, for example:
 
 ```bash
-pnpm --dir frontend --filter @liftlog/mobile db:generate
+pnpm --dir frontend --filter @myos/mobile db:generate
 ```
 
 See [AGENTS.md](AGENTS.md) for repository conventions and

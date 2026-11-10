@@ -27,7 +27,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    PROJECT_NAME: str = "liftlog"
+    PROJECT_NAME: str = "MYØS"
     API_V1_STR: str = "/api/v1"
     DEBUG: bool = False
     DB_ECHO: bool = (
@@ -152,6 +152,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://localhost:8080",
+        "http://localhost:8081",
     ]
     CORS_ALLOW_CREDENTIALS: bool = True
     CORS_ALLOW_METHODS: list[str] = ["*"]

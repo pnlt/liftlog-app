@@ -1,4 +1,4 @@
-import type { Equipment, Muscle } from '@liftlog/domain'
+import type { Equipment, Muscle } from '@myos/domain'
 
 export const MUSCLE_LABELS: Record<Muscle, string> = {
   chest: 'Chest',

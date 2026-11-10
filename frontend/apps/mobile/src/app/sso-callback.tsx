@@ -1,5 +1,1 @@
-import { Redirect } from 'expo-router'
-
-export default function SsoCallback() {
-  return <Redirect href="/" />
-}
+export { SsoCallbackScreen as default } from '@/features/auth/SsoCallbackScreen'

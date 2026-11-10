@@ -1,4 +1,4 @@
-import { EQUIPMENT, LOADS, MUSCLES } from '@liftlog/domain'
+import { EQUIPMENT, LOADS, MUSCLES } from '@myos/domain'
 import { z } from 'zod'
 
 export const ExerciseSchema = z.object({

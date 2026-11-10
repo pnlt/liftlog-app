@@ -1,8 +1,8 @@
 {
-  "project_name": "liftlog",
-  "project_description": "LiftLog AI backend",
-  "author_name": "LiftLog contributors",
-  "author_email": "dev@liftlog.app",
+  "project_name": "MYØS",
+  "project_description": "MYØS AI backend",
+  "author_name": "MYØS contributors",
+  "author_email": "",
   "timezone": "UTC",
   "database": "postgresql",
   "orm_type": "sqlalchemy",
@@ -116,7 +116,7 @@
   "enable_affiliate_program": false,
   "enable_status_badge": false,
   "enable_storybook": false,
-  "project_slug": "liftlog",
+  "project_slug": "myos",
   "use_ai": true,
   "use_sqlalchemy": true,
   "use_sqlmodel": false

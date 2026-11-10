@@ -1,4 +1,4 @@
-import type { Exercise } from '@liftlog/contracts'
+import type { Exercise } from '@myos/contracts'
 
 export interface ExerciseSource {
   readonly name: string

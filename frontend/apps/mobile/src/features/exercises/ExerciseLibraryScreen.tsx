@@ -1,4 +1,4 @@
-import type { Muscle } from '@liftlog/domain'
+import type { Muscle } from '@myos/domain'
 import { router, useLocalSearchParams } from 'expo-router'
 import { Screen } from '@/ui'
 import { ExerciseList } from './ExerciseList'

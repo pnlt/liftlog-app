@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { toDisplay, type Load, type Unit } from '@liftlog/domain'
+import { toDisplay, type Load, type Unit } from '@myos/domain'
 import { Alert } from 'react-native'
 import Animated from 'react-native-reanimated'
 import type { WorkoutSetRow } from '@/data/db/schema'
@@ -10,6 +10,7 @@ import { fadeIn, fadeOut, listLayout, popIn } from '@/ui/motion'
 import { toggleSetDone } from './toggle-set-done'
 
 interface SetRowProps {
+  userId: string
   sessionId: string
   set: WorkoutSetRow
   label: string
@@ -36,7 +37,7 @@ function ValueCell({ value, label, onPress }: { value: number | null; label: str
   )
 }
 
-export function SetRow({ sessionId, set, label, load, unit, restSeconds, onEdit }: SetRowProps) {
+export function SetRow({ userId, sessionId, set, label, load, unit, restSeconds, onEdit }: SetRowProps) {
   const done = set.completedAt != null
   const name = set.isWarmup ? 'Warm-up set' : `Set ${label}`
 
@@ -44,9 +45,9 @@ export function SetRow({ sessionId, set, label, load, unit, restSeconds, onEdit 
     Alert.alert(name, undefined, [
       {
         text: set.isWarmup ? 'Mark as working set' : 'Mark as warm-up',
-        onPress: () => void updateSet(sessionId, set.id, { isWarmup: !set.isWarmup }),
+        onPress: () => void updateSet(userId, sessionId, set.id, { isWarmup: !set.isWarmup }),
       },
-      { text: 'Delete set', style: 'destructive', onPress: () => void removeSet(sessionId, set.id) },
+      { text: 'Delete set', style: 'destructive', onPress: () => void removeSet(userId, sessionId, set.id) },
       { text: 'Cancel', style: 'cancel' },
     ])
   }
@@ -81,7 +82,7 @@ export function SetRow({ sessionId, set, label, load, unit, restSeconds, onEdit 
         onPress={onEdit}
       />
       <PressableScale
-        onPress={() => toggleSetDone(sessionId, set, restSeconds)}
+        onPress={() => toggleSetDone(userId, sessionId, set, restSeconds)}
         pressedScale={0.88}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: done }}

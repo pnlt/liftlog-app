@@ -1,5 +1,5 @@
-import type { Unit } from '@liftlog/domain'
-import { toDisplay } from '@liftlog/domain'
+import type { Unit } from '@myos/domain'
+import { toDisplay } from '@myos/domain'
 import { router } from 'expo-router'
 import { Pressable, View } from 'react-native'
 import type { HistoryItem } from '@/data/workout-queries'

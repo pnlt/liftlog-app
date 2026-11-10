@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DB_ECHO,
+    hide_parameters=True,
     pool_size=settings.DB_POOL_SIZE,
     max_overflow=settings.DB_MAX_OVERFLOW,
     pool_timeout=settings.DB_POOL_TIMEOUT,
@@ -74,6 +75,7 @@ async def get_worker_db_context() -> AsyncGenerator[AsyncSession, None]:
     worker_engine = create_async_engine(
         settings.DATABASE_URL,
         echo=False,
+        hide_parameters=True,
         poolclass=NullPool,
     )
     factory = async_sessionmaker(

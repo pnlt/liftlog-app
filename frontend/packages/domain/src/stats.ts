@@ -42,16 +42,17 @@ export function weeklyBuckets(
   sessions: { startedAt: Date; volumeKg: number }[],
   weeks: number,
   now = new Date(),
+  timeZone?: string,
 ): WeekBucket[] {
   const buckets: WeekBucket[] = []
-  let week = startOfWeek(now)
+  let week = startOfWeek(now, timeZone)
   for (let i = 0; i < weeks; i++) {
     buckets.unshift({ weekStart: week, sessions: 0, volumeKg: 0 })
     week = startOfWeek(new Date(week.getTime() - 3 * DAY))
   }
   const byStart = new Map(buckets.map((b) => [b.weekStart.getTime(), b]))
   for (const s of sessions) {
-    const b = byStart.get(startOfWeek(s.startedAt).getTime())
+    const b = byStart.get(startOfWeek(s.startedAt, timeZone).getTime())
     if (!b) continue
     b.sessions++
     b.volumeKg += s.volumeKg

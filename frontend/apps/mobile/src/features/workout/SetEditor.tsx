@@ -7,10 +7,10 @@ import {
   WEIGHT_STEPS,
   type Load,
   type Unit,
-} from '@liftlog/domain'
+} from '@myos/domain'
 import * as Haptics from 'expo-haptics'
 import { useEffect, useState, type ReactNode } from 'react'
-import { BackHandler, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
+import { BackHandler, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native'
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller'
 import Animated from 'react-native-reanimated'
 import type { WorkoutSetRow } from '@/data/db/schema'
@@ -119,6 +119,7 @@ function Stepper({
 }
 
 interface SetEditorProps {
+  userId: string
   sessionId: string
   set: WorkoutSetRow
   title: string
@@ -130,6 +131,7 @@ interface SetEditorProps {
 }
 
 export function SetEditor({
+  userId,
   sessionId,
   set,
   title,
@@ -145,6 +147,7 @@ export function SetEditor({
   const repsLabel = load === 'time' ? 'Seconds' : 'Reps'
 
   useEffect(() => {
+    if (Platform.OS !== 'android') return
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
       onClose()
       return true
@@ -153,9 +156,9 @@ export function SetEditor({
   }, [onClose])
 
   const writeWeight = (v: number | null) =>
-    void updateSet(sessionId, set.id, { kg: v == null ? null : fromDisplay(v, unit) })
+    void updateSet(userId, sessionId, set.id, { kg: v == null ? null : fromDisplay(v, unit) })
   const writeReps = (v: number | null) =>
-    void updateSet(sessionId, set.id, { reps: v == null ? null : Math.round(v) })
+    void updateSet(userId, sessionId, set.id, { reps: v == null ? null : Math.round(v) })
 
   return (
     <KeyboardAvoidingView behavior="padding" automaticOffset style={[StyleSheet.absoluteFill, styles.root]}>

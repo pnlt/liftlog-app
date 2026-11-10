@@ -1,4 +1,4 @@
-import { toDisplay, type Unit, type WeekBucket } from '@liftlog/domain'
+import { toDisplay, type Unit, type WeekBucket } from '@myos/domain'
 import { View } from 'react-native'
 import { formatNumber } from '@/lib/format'
 import { Text } from '@/ui'

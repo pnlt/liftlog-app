@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "LiftLog",
-    "slug": "liftlog",
+    "name": "MYØS",
+    "slug": "myos",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -23,7 +23,15 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "headers": {
+            "Cross-Origin-Embedder-Policy": "credentialless",
+            "Cross-Origin-Opener-Policy": "same-origin"
+          }
+        }
+      ],
       "expo-sqlite",
       "expo-secure-store",
       "expo-video",
@@ -40,6 +48,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "description": "The operating system for muscle.",
+    "web": {
+      "name": "MYØS",
+      "shortName": "MYØS",
+      "description": "The operating system for muscle."
     }
   }
 }

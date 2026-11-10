@@ -17,7 +17,7 @@ class TestSettings:
 
     def test_project_name_is_set(self):
         """Test project name is configured."""
-        assert settings.PROJECT_NAME == "liftlog"
+        assert settings.PROJECT_NAME == "MYØS"
 
     def test_api_v1_str_is_set(self):
         """Test API version string is set."""

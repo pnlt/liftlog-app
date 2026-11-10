@@ -1,4 +1,4 @@
-import { MUSCLES, type Muscle } from '@liftlog/domain'
+import { MUSCLES, type Muscle } from '@myos/domain'
 import { useState } from 'react'
 import { FlatList, Pressable, ScrollView, TextInput, View } from 'react-native'
 import { useExercises, type ExerciseRow } from '@/data/exercises'

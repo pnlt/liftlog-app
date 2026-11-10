@@ -1,4 +1,5 @@
 import { useSSO } from '@clerk/expo'
+import { useSignIn } from '@clerk/expo/legacy'
 import * as AuthSession from 'expo-auth-session'
 import * as WebBrowser from 'expo-web-browser'
 import { Image } from 'expo-image'
@@ -57,6 +58,7 @@ function Hero() {
 export function SignInScreen() {
   useWarmUpBrowser()
   const { startSSOFlow } = useSSO()
+  const { signIn: browserSignIn } = useSignIn()
   const [pending, setPending] = useState<Provider['strategy'] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -64,6 +66,15 @@ export function SignInScreen() {
     setPending(strategy)
     setError(null)
     try {
+      if (Platform.OS === 'web') {
+        if (!browserSignIn) throw new Error('Authentication is still loading')
+        await browserSignIn.authenticateWithRedirect({
+          strategy,
+          redirectUrl: '/sso-callback',
+          redirectUrlComplete: '/',
+        })
+        return
+      }
       const { createdSessionId, setActive } = await startSSOFlow({
         strategy,
         redirectUrl: AuthSession.makeRedirectUri({ path: 'sso-callback' }),
@@ -86,7 +97,7 @@ export function SignInScreen() {
         <View className="gap-3">
           <Animated.View entering={reveal(0)}>
             <Text variant="label" className="uppercase tracking-widest text-primary">
-              LiftLog
+              MYØS
             </Text>
           </Animated.View>
           <Animated.View entering={reveal(1)}>
@@ -99,7 +110,7 @@ export function SignInScreen() {
           </Animated.View>
           <Animated.View entering={reveal(2)}>
             <Text variant="body" className="text-muted">
-              Every set in two taps. Every gain on record. Works offline.
+              The operating system for muscle.
             </Text>
           </Animated.View>
         </View>

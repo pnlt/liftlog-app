@@ -1,8 +1,8 @@
-import { ACTIVITIES, EXPERIENCES, GOALS, PACES, PLACES, SEXES, UNITS } from '@liftlog/domain'
+import { ACTIVITIES, EXPERIENCES, GOALS, PACES, PLACES, SEXES, UNITS } from '@myos/domain'
 import { z } from 'zod'
 
-/** A session syncs whole: last-write-wins on `updatedAt`, deleted by tombstone (`deletedAt`).
- Weights are always kilograms; `unit` is display preference only. */
+/** Sessions sync as version-checked aggregates; updatedAt is descriptive, not a conflict clock.
+ Deletions retain tombstones. Weights are kilograms; unit is a display preference. */
 export const WorkoutSetSchema = z.object({
   id: z.uuid(),
   position: z.int().nonnegative(),

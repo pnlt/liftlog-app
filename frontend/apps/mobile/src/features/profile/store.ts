@@ -1,28 +1,20 @@
-import type { UserProfile } from '@liftlog/contracts'
-import { buildPlan } from '@liftlog/domain'
-import { useMemo } from 'react'
+import { buildPlan } from '@myos/domain'
+import { randomUUID } from 'expo-crypto'
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { kvStorage } from '@/lib/storage'
+import { syncRepository } from '@/data/sync'
+import { createProfileModel } from './model'
 
-interface ProfileState {
-  profile: UserProfile | null
-  setProfile: (profile: UserProfile) => void
-  clearProfile: () => void
-}
-
-export const useProfile = create<ProfileState>()(
-  persist(
-    (set) => ({
-      profile: null,
-      setProfile: (profile) => set({ profile }),
-      clearProfile: () => set({ profile: null }),
-    }),
-    { name: 'profile', version: 1, storage: kvStorage },
-  ),
+export const useProfile = create(
+  createProfileModel({
+    repository: syncRepository,
+    uuid: randomUUID,
+    now: () => new Date().toISOString(),
+    buildPlan,
+  }),
 )
-
+export function hydrateProfileAccount(owner: string | null): void {
+  useProfile.getState().hydrateAccount(owner)
+}
 export function usePlan() {
-  const profile = useProfile((s) => s.profile)
-  return useMemo(() => (profile ? buildPlan(profile) : null), [profile])
+  return useProfile((state) => state.plan)
 }

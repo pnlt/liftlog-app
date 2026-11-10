@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/expo'
 import Ionicons from '@expo/vector-icons/Ionicons'
-import { UserProfileSchema } from '@liftlog/contracts'
+import { UserProfileSchema } from '@myos/contracts'
 import {
   ACTIVITIES,
   bmi,
@@ -19,10 +19,10 @@ import {
   type Pace,
   type Place,
   type Sex,
-} from '@liftlog/domain'
+} from '@myos/domain'
 import * as Haptics from 'expo-haptics'
 import { useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator, BackHandler, ScrollView, TextInput, View } from 'react-native'
+import { ActivityIndicator, BackHandler, Platform, ScrollView, TextInput, View } from 'react-native'
 import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller'
 import Animated, {
   FadeInDown,
@@ -137,6 +137,8 @@ export function OnboardingScreen() {
   const { user } = useUser()
   const { unit, setUnit, setRestSeconds } = useSettings()
   const setProfile = useProfile((s) => s.setProfile)
+  const editing = useProfile((s) => s.editing)
+  const cancelEditing = useProfile((s) => s.cancelEditing)
   const [draft, setDraft] = useState<Draft>(() => ({
     name: user?.firstName ?? '',
     age: 25,
@@ -186,7 +188,7 @@ export function OnboardingScreen() {
   const back = () => go(steps[step - 1] === 'building' ? step - 2 : step - 1)
 
   useEffect(() => {
-    if (step === 0 || id === 'building') return
+    if (Platform.OS !== 'android' || step === 0 || id === 'building') return
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
       back()
       return true
@@ -245,6 +247,7 @@ export function OnboardingScreen() {
         <View className="h-10 flex-row items-center gap-3">
           <Progress value={(step + 1) / steps.length} />
           {step > 0 && id !== 'building' && <Button label="Back" size="sm" variant="ghost" onPress={back} />}
+          {editing && <Button label="Cancel" size="sm" variant="ghost" onPress={cancelEditing} />}
         </View>
 
         <Animated.View key={id} entering={entering} exiting={exiting} className="flex-1 gap-6">

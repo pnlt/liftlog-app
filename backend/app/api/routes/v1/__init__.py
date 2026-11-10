@@ -12,10 +12,12 @@ from app.api.routes.v1 import agent
 from app.api.routes.v1 import files
 from app.api.routes.v1 import me_slash_commands
 from app.api.routes.v1 import admin_stats
+from app.api.routes.v1 import fitness
 
 v1_router = APIRouter()
 
 v1_router.include_router(health.router, tags=["health"])
+v1_router.include_router(fitness.router, tags=["fitness"])
 
 v1_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 v1_router.include_router(users.router, prefix="/users", tags=["users"])

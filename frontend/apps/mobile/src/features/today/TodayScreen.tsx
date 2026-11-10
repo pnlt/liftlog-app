@@ -1,5 +1,5 @@
 import { useUser } from '@clerk/expo'
-import { toDisplay, weeklyBuckets, weekStreak } from '@liftlog/domain'
+import { toDisplay, weeklyBuckets, weekStreak } from '@myos/domain'
 import { router } from 'expo-router'
 import { View } from 'react-native'
 import { useUserId } from '@/features/auth/use-user-id'
@@ -7,7 +7,7 @@ import { SessionCard } from '@/features/history/SessionCard'
 import { useSettings } from '@/features/settings/store'
 import { ElapsedTime } from '@/features/workout/ElapsedTime'
 import { useStartWorkout } from '@/features/workout/use-start-workout'
-import { useActiveSession, useHistory } from '@/data/workout-queries'
+import { useActiveSessions, useHistory } from '@/data/workout-queries'
 import { formatCount, formatNumber } from '@/lib/format'
 import { Button, Card, Screen, Text } from '@/ui'
 import { FeaturedCarousel } from './FeaturedCarousel'
@@ -26,18 +26,23 @@ export function TodayScreen() {
   const userId = useUserId()
   const { user } = useUser()
   const unit = useSettings((s) => s.unit)
-  const { data: active } = useActiveSession(userId)
-  const { data: history } = useHistory(userId)
+  const timeZone = useSettings((s) => s.timeZone)
+  const { data: active } = useActiveSessions(userId)
+  const { data: history } = useHistory(userId, null)
   const { start, starting } = useStartWorkout(userId)
 
   const buckets = weeklyBuckets(
     history.map((h) => ({ startedAt: h.startedAt, volumeKg: h.volumeKg })),
     8,
+    new Date(),
+    timeZone,
   )
   const thisWeek = buckets[buckets.length - 1]
   const streak = weekStreak(
     history.map((h) => h.startedAt),
     1,
+    new Date(),
+    timeZone,
   )
 
   return (
@@ -51,14 +56,20 @@ export function TodayScreen() {
 
       <FeaturedCarousel />
 
-      {active ? (
-        <Card className="gap-3 border-primary">
-          <View className="flex-row items-center justify-between">
-            <Text variant="heading">Workout in progress</Text>
-            <ElapsedTime since={active.startedAt} />
-          </View>
-          <Button label="Resume workout" onPress={() => router.push('/workout')} />
-        </Card>
+      {active.length > 0 ? (
+        active.map((session) => (
+          <Card key={session.id} className="gap-3 border-primary">
+            <View className="flex-row items-center justify-between">
+              <Text variant="heading">Workout in progress</Text>
+              <ElapsedTime since={session.startedAt} />
+            </View>
+            <Text variant="muted">{session.startedAt.toLocaleString()}</Text>
+            <Button
+              label="Resume workout"
+              onPress={() => router.push({ pathname: '/workout', params: { sessionId: session.id } })}
+            />
+          </Card>
+        ))
       ) : (
         <Button label="Start workout" loading={starting} onPress={start} />
       )}

@@ -11,6 +11,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller'
 import { z } from 'zod'
 import { DatabaseGate } from '@/data/DatabaseGate'
 import { envResult } from '@/lib/env'
+import { SyncProvider } from '@/services/sync/SyncProvider'
 import { EmptyState, Screen } from '@/ui'
 import colors from '@/ui/colors'
 
@@ -37,6 +38,18 @@ function RootNavigator() {
   )
 }
 
+function AccountRuntime() {
+  const { userId, isLoaded } = useAuth()
+  useEffect(() => {
+    if (isLoaded) void SplashScreen.hideAsync()
+  }, [isLoaded])
+  return (
+    <SyncProvider>
+      <RootNavigator key={userId ?? 'signed-out'} />
+    </SyncProvider>
+  )
+}
+
 export default function RootLayout() {
   if (!envResult.success) {
     void SplashScreen.hideAsync()
@@ -52,7 +65,7 @@ export default function RootLayout() {
         <KeyboardProvider>
           <StatusBar style="light" />
           <DatabaseGate>
-            <RootNavigator />
+            <AccountRuntime />
           </DatabaseGate>
         </KeyboardProvider>
       </ClerkProvider>

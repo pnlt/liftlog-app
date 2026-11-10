@@ -1,4 +1,4 @@
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { Alert } from 'react-native'
 import { useUserId } from '@/features/auth/use-user-id'
 import { useActiveSession } from '@/data/workout-queries'
@@ -8,7 +8,8 @@ import { ExerciseList } from './ExerciseList'
 
 export function ExercisePickerScreen() {
   const userId = useUserId()
-  const { data: session } = useActiveSession(userId)
+  const { sessionId } = useLocalSearchParams<{ sessionId?: string }>()
+  const { data: session } = useActiveSession(userId, sessionId)
 
   return (
     <Screen scroll={false} edges={[]}>

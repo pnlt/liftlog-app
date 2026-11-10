@@ -1,3 +1,5 @@
 export * from './exercise'
 export * from './workout'
 export * from './events'
+export * from './sync'
+export * from './planning'

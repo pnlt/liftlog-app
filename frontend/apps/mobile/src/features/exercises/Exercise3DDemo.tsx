@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/immutability -- worklets-core shared values are written through `.value`; there is no setter method. */
-import type { Muscle } from '@liftlog/domain'
+import type { Muscle } from '@myos/domain'
 import { useCallback, useMemo } from 'react'
 import { View } from 'react-native'
 import {

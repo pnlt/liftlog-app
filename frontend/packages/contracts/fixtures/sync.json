@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "mutationId": "10000000-0000-4000-8000-000000000001",
+  "entityType": "workout",
+  "entityId": "20000000-0000-4000-8000-000000000001",
+  "baseVersion": 0,
+  "operation": "importLegacyWorkout",
+  "payload": {
+    "id": "20000000-0000-4000-8000-000000000001",
+    "userId": "user_fixture",
+    "startedAt": "2026-11-06T10:00:00.000Z",
+    "endedAt": "2026-11-06T10:30:00.000Z",
+    "note": "Preserve my workout",
+    "updatedAt": "2026-11-06T10:30:00.000Z",
+    "deletedAt": null,
+    "exercises": [
+      {
+        "id": "30000000-0000-4000-8000-000000000001",
+        "exerciseId": "legacy-sanity-exercise",
+        "position": 0,
+        "note": null,
+        "exerciseSnapshot": { "name": "Legacy exercise", "load": "weight" },
+        "sets": [
+          {
+            "id": "40000000-0000-4000-8000-000000000001",
+            "position": 0,
+            "kg": 60,
+            "reps": 10,
+            "isWarmup": false,
+            "completedAt": "2026-11-06T10:15:00.000Z"
+          }
+        ]
+      }
+    ]
+  }
+}

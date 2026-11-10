@@ -19,9 +19,9 @@ from app.services.user import UserService
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="liftlog")
+@click.version_option(version="0.1.0", prog_name="myos")
 def cli():
-    """liftlog management CLI."""
+    """MYØS management CLI."""
     pass
 
 

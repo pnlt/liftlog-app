@@ -183,6 +183,12 @@ class UserService:
         user = await self.get_by_id(user_id)
 
         update_data = user_in.model_dump(exclude_unset=True)
+        if "onboarding_completed_at" in update_data:
+            from app.services.fitness import FitnessService
+
+            await FitnessService(self.db).set_onboarding(
+                user, update_data.pop("onboarding_completed_at")
+            )
         if "password" in update_data:
             update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
 

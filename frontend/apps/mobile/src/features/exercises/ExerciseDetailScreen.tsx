@@ -1,4 +1,4 @@
-import { bestE1rm, toDisplay } from '@liftlog/domain'
+import { bestE1rm, toDisplay } from '@myos/domain'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useVideoPlayer, VideoView } from 'expo-video'
 import { View } from 'react-native'

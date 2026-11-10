@@ -4,7 +4,7 @@ Setup and commands: [README.md](README.md).
 
 ## Repository layout
 
-- `frontend/` contains the existing LiftLog pnpm monorepo. Follow
+- `frontend/` contains the existing MYØS pnpm monorepo. Follow
   [frontend/AGENTS.md](frontend/AGENTS.md) for mobile, domain, and contracts changes.
 - `backend/` contains the FastAPI/Python backend generated from the local
   Full-Stack AI Agent Template. Follow [backend/AGENTS.md](backend/AGENTS.md).
@@ -12,7 +12,10 @@ Setup and commands: [README.md](README.md).
 
 ## Boundaries
 
-- SQLite remains the mobile source of truth; network calls must not block set logging.
+- PostgreSQL is authoritative for acknowledged account data. SQLite is the mobile
+  cache and durable offline outbox; network calls must not block set logging.
+- Commit every local mutation and its outbox intent atomically. Never evict unsent
+  writes, change transmitted mutation bodies, or silently overwrite version conflicts.
 - Frontend API clients belong in `frontend/apps/mobile/src/services/api/` and
   authenticate using Clerk session JWTs from `useAuth().getToken()`.
 - Backend validates external JWTs through the configured public JWKS endpoint.

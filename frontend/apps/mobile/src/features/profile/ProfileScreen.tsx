@@ -1,12 +1,15 @@
 import { useClerk, useUser } from '@clerk/expo'
-import { UNITS } from '@liftlog/domain'
+import { UNITS } from '@myos/domain'
 import Constants from 'expo-constants'
 import { Image } from 'expo-image'
-import { Alert, Pressable, View } from 'react-native'
+import { useState } from 'react'
+import { Pressable, View } from 'react-native'
 import { useSettings } from '@/features/settings/store'
+import { SyncStatus } from '@/features/sync/SyncStatus'
 import { PlanSummary } from './PlanSummary'
 import { usePlan, useProfile } from './store'
 import { formatDuration } from '@/lib/format'
+import { confirmAction } from '@/lib/dialogs'
 import { Button, Card, Screen, Text } from '@/ui'
 
 const DEMO_STYLES = [
@@ -20,19 +23,35 @@ export function ProfileScreen() {
   const { unit, setUnit, restSeconds, setRestSeconds, demoStyle, setDemoStyle } = useSettings()
   const { profile, clearProfile } = useProfile()
   const plan = usePlan()
+  const [signingOut, setSigningOut] = useState(false)
+  const [signOutError, setSignOutError] = useState<string | null>(null)
 
-  function confirmRedo() {
-    Alert.alert('Update your plan?', 'Answer the questions again. Your workouts are kept.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Start', onPress: clearProfile },
-    ])
+  async function confirmRedo() {
+    if (
+      await confirmAction('Update your plan?', 'Answer the questions again. Your workouts are kept.', {
+        confirmLabel: 'Start',
+      })
+    )
+      clearProfile()
   }
 
-  function confirmSignOut() {
-    Alert.alert('Sign out?', 'Workouts stay on this device.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign out', style: 'destructive', onPress: () => void signOut() },
-    ])
+  async function signOutAccount() {
+    setSignOutError(null)
+    setSigningOut(true)
+    try {
+      await signOut()
+    } catch {
+      setSignOutError('Could not sign out. Check your connection and try again.')
+    } finally {
+      setSigningOut(false)
+    }
+  }
+
+  async function confirmSignOut() {
+    if (signingOut) return
+    const message = 'Unsent changes stay on this device until you sign in to this account again.'
+    if (await confirmAction('Sign out?', message, { confirmLabel: 'Sign out', destructive: true }))
+      await signOutAccount()
   }
 
   return (
@@ -121,7 +140,9 @@ export function ProfileScreen() {
         </View>
       </Card>
 
-      <Button label="Sign out" variant="danger" onPress={confirmSignOut} />
+      {signOutError && <Text accessibilityRole="alert">{signOutError}</Text>}
+      <Button label="Sign out" variant="danger" loading={signingOut} onPress={confirmSignOut} />
+      <SyncStatus />
       <Text variant="muted" className="text-center">
         Version {Constants.expoConfig?.version}
       </Text>

@@ -1,5 +1,5 @@
 {
-  "name": "liftlog",
+  "name": "myos",
   "private": true,
   "packageManager": "pnpm@12.9.0",
   "engines": {
@@ -10,7 +10,10 @@
     "install:backend": "uv sync --directory backend",
     "dev": "pnpm --dir frontend dev",
     "dev:frontend": "pnpm --dir frontend dev",
-    "dev:backend": "uv run --directory backend uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:web": "pnpm --dir frontend dev:web",
+    "dev:android": "pnpm --dir frontend --filter @myos/mobile android",
+    "android:usb": "pnpm --dir frontend --filter @myos/mobile android:usb",
+    "dev:backend": "uv run --directory backend uvicorn app.main:app --reload --host 0.0.0.0",
     "typecheck": "pnpm --dir frontend typecheck",
     "lint": "pnpm --dir frontend lint && uv run --directory backend ruff check .",
     "test": "pnpm --dir frontend test && uv run --directory backend pytest",

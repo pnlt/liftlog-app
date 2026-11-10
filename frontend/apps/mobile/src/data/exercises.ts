@@ -1,5 +1,5 @@
-import type { Exercise } from '@liftlog/contracts'
-import type { Muscle } from '@liftlog/domain'
+import type { Exercise } from '@myos/contracts'
+import type { Muscle } from '@myos/domain'
 import { asc, eq, sql } from 'drizzle-orm'
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite'
 import { db } from './db/client'

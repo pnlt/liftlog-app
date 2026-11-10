@@ -15,7 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db_session
 
-DBSession = Annotated[AsyncSession, Depends(get_db_session)]
+# Commit/rollback before sending an HTTP acknowledgment. Request-scoped yield
+# cleanup runs after the response and cannot report a failed commit to callers.
+DBSession = Annotated[AsyncSession, Depends(get_db_session, scope="function")]
 
 from app.db.session import get_db_context
 

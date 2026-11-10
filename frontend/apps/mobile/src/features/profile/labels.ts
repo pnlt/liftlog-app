@@ -1,5 +1,5 @@
 import type Ionicons from '@expo/vector-icons/Ionicons'
-import type { Activity, Experience, Goal, Pace, Phase, Place, Sex, Split } from '@liftlog/domain'
+import type { Activity, Experience, Goal, Pace, Phase, Place, Sex, Split } from '@myos/domain'
 import type { ComponentProps } from 'react'
 
 type IconName = ComponentProps<typeof Ionicons>['name']

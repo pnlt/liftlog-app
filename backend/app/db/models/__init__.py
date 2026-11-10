@@ -7,8 +7,10 @@ from app.db.models.chat_file import ChatFile
 from app.db.models.message_rating import MessageRating
 from app.db.models.conversation_share import ConversationShare
 from app.db.models.user_slash_command import UserSlashCommand
+from app.db.models.fitness import FITNESS_TABLES
 
 __all__ = [
+    "FITNESS_TABLES",
     "User",
     "Conversation",
     "Message",

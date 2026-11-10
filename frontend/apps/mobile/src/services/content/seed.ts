@@ -1,5 +1,5 @@
-import type { Equipment, Load, Muscle } from '@liftlog/domain'
-import type { Exercise } from '@liftlog/contracts'
+import type { Equipment, Load, Muscle } from '@myos/domain'
+import type { Exercise } from '@myos/contracts'
 
 const SEEDED_AT = '2026-11-03T00:00:00.000Z'
 const LOADED: Equipment[] = ['barbell', 'dumbbell', 'kettlebell', 'cable', 'machine']

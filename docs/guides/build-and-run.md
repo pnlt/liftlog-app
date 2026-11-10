@@ -1,25 +1,25 @@
-# LiftLog: build and run guide
+# MYØS: build and run guide
 
-This guide covers the LiftLog frontend, relocated under `frontend/` on November 6, 2026. Backend setup is documented in [backend/README.md](../../backend/README.md). LiftLog is an Android and iOS workout logger with local persistence, Clerk authentication, an exercise library, onboarding-generated training and nutrition estimates, and workout history.
+This guide covers the MYØS frontend, relocated under `frontend/` on November 6, 2026. Backend setup is documented in [backend/README.md](../../backend/README.md). MYØS is an Android and iOS workout logger with local persistence, Clerk authentication, an exercise library, onboarding-generated training and nutrition estimates, and workout history.
 
 Commands below use Bash. Unless a block changes directories, run it from the repository root. On another machine, replace the absolute checkout path with your own.
 
 ## 1. Understand what you are running
 
-| Component                  | Implementation                                                       |
-| -------------------------- | -------------------------------------------------------------------- |
-| Mobile application         | Expo `~58.0.21`, React Native `0.88.1`, React `19.3.0`, TypeScript   |
-| Navigation                 | Expo Router; route files delegate to feature screens                 |
-| UI                         | NativeWind 4, shared UI primitives, Reanimated, dark theme           |
-| Local database             | Drizzle ORM over `expo-sqlite`, database named `liftlog.db`          |
-| Preferences and onboarding | Zustand persisted through SQLite key-value storage                   |
-| Authentication             | Clerk; Google sign-in, plus Apple sign-in on iOS                     |
-| Exercise content           | Bundled seed and generated catalog, optionally refreshed from Sanity |
-| Shared rules               | Pure TypeScript in `@liftlog/domain`                                 |
-| Shared data schemas        | Zod in `@liftlog/contracts`                                          |
-| Checks                     | Prettier, TypeScript, Expo ESLint, Vitest                            |
+| Component                  | Implementation                                                        |
+| -------------------------- | --------------------------------------------------------------------- |
+| Mobile application         | Expo `~58.0.21`, React Native `0.88.1`, React `19.3.0`, TypeScript    |
+| Navigation                 | Expo Router; route files delegate to feature screens                  |
+| UI                         | NativeWind 4, shared UI primitives, Reanimated, dark theme            |
+| Local database             | Drizzle ORM over `expo-sqlite`, database named `liftlog.db`           |
+| Preferences and onboarding | Account-scoped SQLite projections/outbox synchronized with PostgreSQL |
+| Authentication             | Clerk; Google sign-in, plus Apple sign-in on iOS                      |
+| Exercise content           | Bundled fallback and revision-pinned backend catalog                  |
+| Shared rules               | Pure TypeScript in `@myos/domain`                                     |
+| Shared data schemas        | Zod in `@myos/contracts`                                              |
+| Checks                     | Prettier, TypeScript, Expo ESLint, Vitest                             |
 
-The mobile app runs independently of the separate FastAPI backend in `backend/`; it does not require Docker or a server database for local workout logging. Backend synchronization, reward systems, and an AI coach implementation are future integration points. The onboarding plan is computed locally; it does not call an AI model. The progression engine exists in the domain package but is not wired into the current workout editor as automatic recommendations.
+PostgreSQL behind FastAPI is authoritative for acknowledged account data. First use of an uncached account needs online bootstrap; afterward SQLite supports offline logging and retains pending edits. See the [synchronization and recovery guide](synchronization.md) for backend setup, old-data import and conflict handling. The onboarding summary is computed locally without a model call. Rewards, AI coaching and automatic progression remain separate features.
 
 The workspace packages expose TypeScript source directly. **There is no root `pnpm build` command and no shared-package compilation step.** Building this project means producing the native mobile application.
 
@@ -44,7 +44,7 @@ liftlog-app/
 │       └── lib/                 Environment, storage, formatting, clock helpers
 ├── frontend/packages/domain/             Plans, progression, e1RM, stats, streaks, units
 ├── frontend/packages/contracts/          Exercise, workout, profile, event schemas
-├── backend/                     Separate FastAPI backend (optional for mobile)
+├── backend/                     FastAPI and authoritative PostgreSQL account data
 ├── docs/adr/                    Architecture decisions
 └── .github/workflows/ci.yml      Workspace checks
 ```
@@ -55,14 +55,14 @@ The dependency direction is mobile → contracts/domain, with contracts also usi
 
 1. `src/lib/env.ts` validates public environment values. Invalid configuration displays **App is misconfigured**.
 2. The root layout installs the Clerk and keyboard providers. `DatabaseGate` applies bundled migrations before rendering navigation.
-3. Catalog synchronization imports bundled exercises when `BUNDLED_REVISION` changes, then optionally pulls Sanity content. Invalid exercise records are dropped with a warning; Sanity failure preserves cached content.
-4. Clerk authentication gates the main application. A missing local profile gates the onboarding screens.
-5. Onboarding calculates a plan and saves the profile and default rest interval. The main tabs are **Today**, **History**, **Exercises**, and **Profile**.
-6. Workout edits write to SQLite immediately. Live queries update the UI. Finishing removes incomplete sets, saves the session end time, and emits `workout.completed`.
+3. Bundled exercises are seeded when `BUNDLED_REVISION` changes. Authenticated foreground synchronization refreshes the cache from a complete backend catalog release.
+4. Clerk authentication selects an account partition; initial online bootstrap restores its remote state. A missing accepted account profile opens onboarding. Global legacy preferences require explicit ownership confirmation.
+5. Onboarding calculates and atomically saves a profile revision and accepted summary snapshot with an outbox intent. The main tabs are **Today**, **History**, **Exercises**, and **Profile**.
+6. Every workout edit writes SQLite and its outbox atomically. Live queries update immediately while a foreground worker pushes versioned mutations and pulls changes. Finishing removes incomplete sets, saves the end time, and emits `workout.completed` independently of network success.
 
-Database tables are `exercises`, `workout_sessions`, `workout_exercises`, and `workout_sets`. Weights are stored in kilograms; pounds are a display/input conversion. Timed exercises store seconds in the `reps` field. Completed-session deletion uses a tombstone; discarding an unfinished workout deletes it and its children.
+The local database retains `exercises`, `workout_sessions`, `workout_exercises`, and `workout_sets`, plus sync account/entity/outbox metadata. Weights remain kilograms; pounds are a display/input conversion. Timed exercises store seconds in `reps`. Both completed deletion and unfinished discard use synchronized tombstones.
 
-Workout history is filtered by Clerk user ID. Profile, settings, and rest-timer storage keys are device-local and are not scoped per user. Signing out does not remove workouts or clear the profile. There is no cloud backup/sync implementation in this checkout.
+Workout data, profile, settings, cursors and pending changes are scoped by Clerk subject. Signing out stops the worker and clears in-memory account views while preserving that account's pending data. A running rest timer remains device state and stops on account changes. PostgreSQL can restore acknowledged data on another installation; device storage removed before synchronization cannot be recovered from the server.
 
 ## 2. Prerequisites
 
@@ -134,7 +134,7 @@ The sign-in screen offers Google, plus Apple on iOS; there is no email/password 
 
 All `EXPO_PUBLIC_*` values are client configuration and can appear in the application bundle. Do not place Clerk secret keys, Sanity write tokens, or model API keys there. `.env` is ignored by git.
 
-Sanity is optional and has no Studio workspace in this repository. The adapter performs an unauthenticated query for `exercise` documents with `slug.current`, so its dataset must permit the intended reads. The exact document projection is in `src/services/content/sanity.ts`, and returned exercises must satisfy `ExerciseSchema`.
+Sanity is no longer a direct mobile refresh source. The previous adapter is retained for reference, but canonical catalog updates are published as validated backend artifacts. There is no Sanity Studio workspace in this repository. See the catalog section of the [synchronization guide](synchronization.md).
 
 ## 4. Build and run Android locally
 
@@ -145,13 +145,13 @@ cd /home/ninkuto/Projects/Workspace/ai-projects/liftlog-app/frontend/apps/mobile
 pnpm android
 ```
 
-This runs `expo run:android`: generates the native Android directory when absent, compiles and installs a development client, and starts Metro. To choose a target explicitly:
+This starts the API USB forwarding watcher and runs `expo run:android`: generates the native Android directory when absent, compiles and installs a development client, and starts Metro. To choose a target explicitly:
 
 ```bash
-pnpm exec expo run:android --device
+pnpm android --device
 ```
 
-Expected result: LiftLog opens, Metro serves the JavaScript bundle, and the sign-in screen appears. After successful sign-in, a fresh installation enters onboarding. This project requires a **development client**, not Expo Go. See [Expo's local build workflow](https://docs.expo.dev/guides/local-app-development/).
+Expected result: MYØS opens, Metro serves the JavaScript bundle, and the sign-in screen appears. After successful sign-in, a fresh installation enters onboarding. This project requires a **development client**, not Expo Go. See [Expo's local build workflow](https://docs.expo.dev/guides/local-app-development/).
 
 ### Subsequent development sessions
 
@@ -163,6 +163,14 @@ pnpm dev
 ```
 
 Alternatively, run `pnpm start` from `frontend/apps/mobile`. Both start Metro without compiling a new native app. Use the terminal's Android launch shortcut or open the installed development client. Keep Metro running while developing.
+
+These pnpm commands also monitor ADB devices when `EXPO_PUBLIC_API_URL` points to
+localhost. They forward that API port automatically and restore it after USB
+reconnection, so a new build does not need another manual `adb reverse`. Run the
+backend on the same port. If using raw Expo CLI, Android Studio, Gradle, or an
+installed APK without Metro, keep `pnpm android:usb` running from the repository
+root. For production-mode `.env` files with that standalone watcher, use
+`NODE_ENV=production pnpm android:usb`. See the [USB setup](../../README.md#frontend).
 
 JavaScript/TypeScript changes usually reload through Metro. Native dependency and config-plugin changes require rebuilding the development client. Native directories are generated and ignored by git; change `app.json` or config plugins instead of editing generated native files.
 
@@ -275,16 +283,16 @@ pnpm check:frontend
 
 It runs formatting, type checking, linting, then tests. It stops when a step fails.
 
-| Command, from repository root                              | Purpose                                                   |
-| ---------------------------------------------------------- | --------------------------------------------------------- |
-| `pnpm dev`                                                 | Start the mobile Metro server                             |
-| `pnpm --dir frontend format:check`                         | Check repository formatting                               |
-| `pnpm --dir frontend typecheck`                            | Type-check every workspace                                |
-| `pnpm --dir frontend lint`                                 | Run workspace lint scripts                                |
-| `pnpm --dir frontend test`                                 | Run workspace test scripts                                |
-| `pnpm --dir frontend --filter @liftlog/domain test`        | Run training-rule tests                                   |
-| `pnpm --dir frontend --filter @liftlog/contracts test`     | Run schema tests                                          |
-| `pnpm --dir frontend --filter @liftlog/mobile db:generate` | Generate a new SQLite migration after changing the schema |
+| Command, from repository root                           | Purpose                                                   |
+| ------------------------------------------------------- | --------------------------------------------------------- |
+| `pnpm dev`                                              | Start the mobile Metro server                             |
+| `pnpm --dir frontend format:check`                      | Check repository formatting                               |
+| `pnpm --dir frontend typecheck`                         | Type-check every workspace                                |
+| `pnpm --dir frontend lint`                              | Run workspace lint scripts                                |
+| `pnpm --dir frontend test`                              | Run workspace test scripts                                |
+| `pnpm --dir frontend --filter @myos/domain test`        | Run training-rule tests                                   |
+| `pnpm --dir frontend --filter @myos/contracts test`     | Run schema tests                                          |
+| `pnpm --dir frontend --filter @myos/mobile db:generate` | Generate a new SQLite migration after changing the schema |
 
 The mobile `test` script currently prints a message; it does not run mobile UI or integration tests. Vitest tests cover domain behavior and selected contracts. Shared-package lint scripts use TypeScript unused-code checks; mobile lint uses Expo ESLint. CI installs with the frozen lockfile and runs the four quality steps on pull requests and pushes to `main`. It does not build native binaries.
 

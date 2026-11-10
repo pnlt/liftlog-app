@@ -28,6 +28,22 @@ jobs:
 
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: liftlog
+          POSTGRES_PASSWORD: liftlog_test
+          POSTGRES_DB: liftlog_sync_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U liftlog -d liftlog_sync_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      FITNESS_TEST_DATABASE_URL: postgresql+asyncpg://liftlog:liftlog_test@localhost:5432/liftlog_sync_test
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v10.2.0

@@ -5,7 +5,7 @@ import colors from '@/ui/colors'
 
 export default function SignedInLayout() {
   const { userId } = useAuth()
-  const onboarded = useProfile((s) => s.profile != null)
+  const onboarded = useProfile((s) => s.profile != null && s.onboardingCompletedAt != null && !s.editing)
   // Children call useUserId(); never render them during the sign-out transition.
   if (!userId) return null
 

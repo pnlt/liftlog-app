@@ -1,9 +1,7 @@
-import { ExerciseSchema, type Exercise } from '@liftlog/contracts'
+import { ExerciseSchema, type Exercise } from '@myos/contracts'
 import Storage from 'expo-sqlite/kv-store'
 import { upsertExercises } from '@/data/exercises'
-import { envResult } from '@/lib/env'
 import { BUNDLED_REVISION, bundledSource } from './bundled'
-import { sanitySource } from './sanity'
 import type { ExerciseSource } from './source'
 
 function validate(source: ExerciseSource, docs: unknown[]): Exercise[] {
@@ -25,11 +23,5 @@ export async function syncExerciseCatalog(): Promise<void> {
     await pull(bundledSource)
     Storage.setItemSync('bundledRevision', BUNDLED_REVISION)
   }
-  const sanity = envResult.success ? envResult.data.sanity : null
-  if (!sanity) return
-  try {
-    await pull(sanitySource(sanity.projectId, sanity.dataset))
-  } catch (err) {
-    console.warn('[content] CMS refresh failed, using cached catalog', err)
-  }
+  // Canonical catalog releases are refreshed through the authenticated backend.
 }
