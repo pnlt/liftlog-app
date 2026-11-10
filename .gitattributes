@@ -6,3 +6,4 @@ frontend/apps/mobile/src/ui/colors.js -banned-languages
 frontend/apps/mobile/src/data/db/migrations/migrations.js -banned-languages
 frontend/apps/mobile/src/services/content/demos.ts -comment-budget
 frontend/apps/mobile/src/data/db/migrations/** -comment-budget
+frontend/apps/mobile/scripts/build-exercise-model.py -banned-languages

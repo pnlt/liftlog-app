@@ -3,6 +3,7 @@ const { withNativeWind } = require('nativewind/metro')
 
 const config = getDefaultConfig(__dirname)
 config.resolver.sourceExts.push('sql')
+config.resolver.assetExts.push('glb')
 
 if (!config.resolver.assetExts.includes('wasm')) {
   config.resolver.assetExts.push('wasm')

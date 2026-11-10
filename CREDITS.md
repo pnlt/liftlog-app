@@ -1,5 +1,16 @@
 # Credits
 
+Animated exercise model `frontend/apps/mobile/assets/models/exercises.glb` is built from
+a LiftLog-generated, Mixamo-rigged Fighter character. The build strips its control rig and
+colour textures, keeps its normal map, and smooths the hair into a bald dome.
+The equipment, the per-muscle material zones, the motion arrows, the grip pose and the
+17 standing free-weight exercise loops are added by LiftLog. The motion is hand-keyed, not motion capture.
+To regenerate it with Blender 5.2, run this from `frontend/apps/mobile`. The textures directory must hold the Fighter's `*_normal.png` map:
+
+```bash
+blender -b --disable-autoexec --python scripts/build-exercise-model.py -- ~/Downloads/Fighter.blend ~/Downloads/textures
+```
+
 Third-party content bundled with or loaded by MYØS.
 
 | Content                                      | Source                                                          | Author                   | Licence                                                         |

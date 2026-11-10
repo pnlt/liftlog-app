@@ -1,0 +1,113 @@
+diff --git a/lib/commonjs/utilities/withCleanupScope.js b/lib/commonjs/utilities/withCleanupScope.js
+index 25c667ae9f0f6a25c2cfd0aac7801b8af590b476..0a7ddabbbd0ff134232b72716c70a47f14ab4055 100644
+--- a/lib/commonjs/utilities/withCleanupScope.js
++++ b/lib/commonjs/utilities/withCleanupScope.js
+@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", {
+   value: true
+ });
+ exports.withCleanupScope = withCleanupScope;
+-var _reactNative = require("react-native");
+ /**
+  * Operations that are releasing memory from JS should be executed after cleanup functions
+  * that are still operating on the resource.
+@@ -27,14 +26,14 @@ var _reactNative = require("react-native");
+  */
+ function withCleanupScope(cleanupFunction) {
+   return () => {
+-    // runAfterInteractions to make sure its called after all children have run their cleanup and all interactions are done
+-    _reactNative.InteractionManager.runAfterInteractions(() => {
++    // InteractionManager was removed in RN 0.88; a macrotask still runs after all child cleanups
++    setTimeout(() => {
+       // Cleanup in worklets context, as cleanup functions might also use the worklet context
+       // and we want to queue our cleanup after all other worklets have run
+       setTimeout(() => {
+         cleanupFunction();
+       }, 0);
+-    });
++    }, 0)
+   };
+ }
+ //# sourceMappingURL=withCleanupScope.js.map
+\ No newline at end of file
+diff --git a/lib/module/utilities/withCleanupScope.js b/lib/module/utilities/withCleanupScope.js
+index 67eceeeec711583358c473e1317f0cdc2c6d6968..8e6f2c1a4f0d1810a6bc7a76d9bc917661fc6e91 100644
+--- a/lib/module/utilities/withCleanupScope.js
++++ b/lib/module/utilities/withCleanupScope.js
+@@ -1,7 +1,5 @@
+ "use strict";
+ 
+-import { InteractionManager } from 'react-native';
+-
+ /**
+  * Operations that are releasing memory from JS should be executed after cleanup functions
+  * that are still operating on the resource.
+@@ -24,14 +22,14 @@ import { InteractionManager } from 'react-native';
+  */
+ export function withCleanupScope(cleanupFunction) {
+   return () => {
+-    // runAfterInteractions to make sure its called after all children have run their cleanup and all interactions are done
+-    InteractionManager.runAfterInteractions(() => {
++    // InteractionManager was removed in RN 0.88; a macrotask still runs after all child cleanups
++    setTimeout(() => {
+       // Cleanup in worklets context, as cleanup functions might also use the worklet context
+       // and we want to queue our cleanup after all other worklets have run
+       setTimeout(() => {
+         cleanupFunction();
+       }, 0);
+-    });
++    }, 0)
+   };
+ }
+ //# sourceMappingURL=withCleanupScope.js.map
+\ No newline at end of file
+diff --git a/lib/typescript/types/MaterialInstance.d.ts b/lib/typescript/types/MaterialInstance.d.ts
+index 2fa4c2e81599ae01c7b76c2e75ab4760fb7ad1f9..88a2678e9bc1c6622be1eb1c376e5ea04dc6c3ea 100644
+--- a/lib/typescript/types/MaterialInstance.d.ts
++++ b/lib/typescript/types/MaterialInstance.d.ts
+@@ -15,6 +15,6 @@ export interface MaterialInstance {
+     getMat3fParameter(name: string): Mat3f;
+     getFloat3Parameter(name: string): Float3;
+     getFloat4Parameter(name: string): Float4;
+-    readonly name: string;
++    readonly getName: string;
+ }
+ //# sourceMappingURL=MaterialInstance.d.ts.map
+\ No newline at end of file
+diff --git a/src/types/MaterialInstance.ts b/src/types/MaterialInstance.ts
+index 513c532acc7ef2ace798a1d4697572ae7975e309..74e483d94649df220557a33f2b1dba42f1c54a1e 100644
+--- a/src/types/MaterialInstance.ts
++++ b/src/types/MaterialInstance.ts
+@@ -18,5 +18,5 @@ export interface MaterialInstance {
+   getMat3fParameter(name: string): Mat3f
+   getFloat3Parameter(name: string): Float3
+   getFloat4Parameter(name: string): Float4
+-  readonly name: string
++  readonly getName: string
+ }
+diff --git a/src/utilities/withCleanupScope.ts b/src/utilities/withCleanupScope.ts
+index 20ec04e4a14b5a6aea36ddce86c747cd122ebf5c..d22d4cdf632ce5a336052d7ff39c518c39a1011b 100644
+--- a/src/utilities/withCleanupScope.ts
++++ b/src/utilities/withCleanupScope.ts
+@@ -1,5 +1,3 @@
+-import { InteractionManager } from 'react-native'
+-
+ /**
+  * Operations that are releasing memory from JS should be executed after cleanup functions
+  * that are still operating on the resource.
+@@ -22,13 +20,13 @@ import { InteractionManager } from 'react-native'
+  */
+ export function withCleanupScope(cleanupFunction: Function) {
+   return () => {
+-    // runAfterInteractions to make sure its called after all children have run their cleanup and all interactions are done
+-    InteractionManager.runAfterInteractions(() => {
++    // InteractionManager was removed in RN 0.88; a macrotask still runs after all child cleanups
++    setTimeout(() => {
+       // Cleanup in worklets context, as cleanup functions might also use the worklet context
+       // and we want to queue our cleanup after all other worklets have run
+       setTimeout(() => {
+         cleanupFunction()
+       }, 0)
+-    })
++    }, 0)
+   }
+ }

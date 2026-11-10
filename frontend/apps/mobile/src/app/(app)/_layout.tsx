@@ -27,6 +27,7 @@ export default function SignedInLayout() {
         <Stack.Screen name="add-exercise" options={{ presentation: 'modal', title: 'Add exercise' }} />
         <Stack.Screen name="exercise/[id]" options={{ title: '' }} />
         <Stack.Screen name="session/[id]" options={{ title: 'Workout' }} />
+        <Stack.Screen name="dev-3d" options={{ title: '3D demo' }} />
       </Stack.Protected>
     </Stack>
   )

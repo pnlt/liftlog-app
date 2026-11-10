@@ -9,6 +9,7 @@ import { useExerciseSets } from '@/data/workout-queries'
 import { formatDate } from '@/lib/format'
 import { Card, EmptyState, Loading, Screen, Text } from '@/ui'
 import { DEMO_VIDEOS } from '@/services/content/demos'
+import { Exercise3DDemo, exerciseAnimation } from './Exercise3DDemo'
 import { ExerciseDemo, useDemoFrames } from './ExerciseDemo'
 import { EQUIPMENT_LABELS, MUSCLE_LABELS } from './labels'
 
@@ -32,6 +33,16 @@ function Demo({ exercise }: { exercise: ExerciseRow }) {
   const { frames, art } = useDemoFrames(exercise)
   const clip = DEMO_VIDEOS[exercise.id]
   if (exercise.videoUrl) return <DemoVideo source={exercise.videoUrl} />
+  const animation = exerciseAnimation(exercise.id)
+  if (animation)
+    return (
+      <View className="gap-2">
+        <Exercise3DDemo animation={animation} highlights={exercise.primaryMuscles} />
+        <Text variant="caption">
+          {exercise.primaryMuscles.map((m) => MUSCLE_LABELS[m]).join(', ')} highlighted · drag to rotate
+        </Text>
+      </View>
+    )
   if (clip)
     return (
       <View className="gap-2">
